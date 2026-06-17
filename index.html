@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Director Dashboard – HDCRS</title>
+  <style>
+    :root { --primary: #00695C; --bg: #F5E4D0; --card: white; --text: #3E2723; }
+    body { background: var(--bg); font-family: system-ui, sans-serif; margin: 0; padding: 2rem; display: flex; justify-content: center; }
+    .login-box, .container {
+      max-width: 500px; width: 100%; background: var(--card); border-radius: 20px; padding: 2rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06); text-align: center;
+    }
+    .login-box h2, .container h1 { color: var(--primary); }
+    .login-box input { width: 100%; padding: 0.7rem; margin: 0.5rem 0; border: 1px solid #D7CCC8; border-radius: 8px; }
+    .btn { padding: 0.7rem 1.5rem; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; background: var(--primary); color: white; margin-top: 0.5rem; }
+    .error { color: #C44536; margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th { background: #F3E7DA; color: var(--text); padding: 0.8rem; text-align: left; border-bottom: 2px solid var(--primary); }
+    td { padding: 0.7rem; border-bottom: 1px solid #D7CCC8; }
+    .approve { background: var(--primary); color: white; }
+    .reject { background: #C44536; color: white; }
+    .status-badge { padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600; font-size: 0.85rem; }
+    .Pending { background: #FFF3E0; color: #E65100; }
+    .Approved { background: #E0F2F1; color: #00695C; }
+    .Rejected { background: #FFEBEE; color: #C44536; }
+  </style>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-box">
+    <h2>🔐 Director Login</h2>
+    <input type="text" id="loginName" placeholder="Full Name">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button class="btn" onclick="attemptLogin()">Login</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- Dashboard (hidden until login) -->
+  <div id="dashboard" class="container hidden">
+    <h1>📋 Director Dashboard – Daily Reports</h1>
+    <p>Logged in as <span id="loggedUser"></span> | <a href="#" onclick="logout()">Logout</a></p>
+    <button class="btn" onclick="loadReports()">🔄 Refresh</button>
+    <div id="reportsTable">Loading...</div>
+    <div id="message" class="error"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'; // ← CHANGE
+
+    // Check session
+    const loggedUser = sessionStorage.getItem('hdcre_director');
+    if (loggedUser) {
+      showDashboard(loggedUser);
+    }
+
+    async function attemptLogin() {
+      const name = document.getElementById('loginName').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorDiv = document.getElementById('loginError');
+      if (!name || !password) { errorDiv.textContent = 'Enter name and password.'; return; }
+      try {
+        const res = await fetch(`${API_BASE}?action=login&name=${encodeURIComponent(name)}&password=${encodeURIComponent(password)}`);
+        const data = await res.json();
+        if (data.success && data.role === 'Director') {
+          sessionStorage.setItem('hdcre_director', name);
+          showDashboard(name);
+        } else if (data.success && data.role !== 'Director') {
+          errorDiv.textContent = 'This portal is only for Directors.';
+        } else {
+          errorDiv.textContent = 'Invalid credentials.';
+        }
+      } catch (e) { errorDiv.textContent = 'Network error.'; }
+    }
+
+    function showDashboard(name) {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      document.getElementById('loggedUser').textContent = name;
+      loadReports();
+    }
+
+    function logout() {
+      sessionStorage.removeItem('hdcre_director');
+      location.reload();
+    }
+
+    async function loadReports() {
+      try {
+        const res = await fetch(`${API_BASE}?endpoint=reports`);
+        const reports = await res.json();
+        let html = `<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Status</th><th>Action</th></tr>`;
+        if (reports.length === 0) html += `<tr><td colspan="6">No reports.</td></tr>`;
+        else {
+          reports.forEach(r => {
+            html += `<tr>
+              <td>${r.id}</td><td>${r.site}</td><td>${r.date}</td><td>${r.reName}</td>
+              <td><span class="status-badge ${r.status}">${r.status}</span></td>
+              <td>`;
+            if (r.status === 'Pending') {
+              html += `<button class="btn approve" onclick="approveReport('${r.id}')">Approve</button>
+                       <button class="btn reject" onclick="rejectReport('${r.id}')">Reject</button>`;
+            } else {
+              html += `<em>${r.status}</em>`;
+            }
+            html += `</td></tr>`;
+          });
+        }
+        html += `</table>`;
+        document.getElementById('reportsTable').innerHTML = html;
+      } catch(e) { document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load.</p>'; }
+    }
+
+    async function approveReport(id) {
+      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: id, directorEmail: loggedUser }) });
+      loadReports();
+    }
+
+    async function rejectReport(id) {
+      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: id, directorEmail: loggedUser + ' [REJECTED]' }) });
+      loadReports();
+    }
+  </script>
+</body>
+</html>
