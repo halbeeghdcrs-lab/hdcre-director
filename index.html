@@ -8,23 +8,41 @@
     :root { --primary: #00695C; --bg: #F5E4D0; --card: white; --text: #3E2723; }
     body { background: var(--bg); font-family: system-ui, sans-serif; margin: 0; padding: 2rem; display: flex; justify-content: center; }
     .login-box, .container {
-      max-width: 500px; width: 100%; background: var(--card); border-radius: 20px; padding: 2rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06); text-align: center;
+      max-width: 1200px; width: 100%; background: var(--card); border-radius: 20px; padding: 2rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
     }
+    .login-box { max-width: 400px; text-align: center; margin-top: 4rem; }
     .login-box h2, .container h1 { color: var(--primary); }
     .login-box input { width: 100%; padding: 0.7rem; margin: 0.5rem 0; border: 1px solid #D7CCC8; border-radius: 8px; }
-    .btn { padding: 0.7rem 1.5rem; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; background: var(--primary); color: white; margin-top: 0.5rem; }
-    .error { color: #C44536; margin-top: 0.5rem; }
+    .btn { padding: 0.5rem 1.2rem; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; margin: 0.2rem; }
+    .approve { background: var(--primary); color: white; }
+    .reject { background: #C44536; color: white; }
+    .view { background: #5D4037; color: white; }
     .hidden { display: none !important; }
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     th { background: #F3E7DA; color: var(--text); padding: 0.8rem; text-align: left; border-bottom: 2px solid var(--primary); }
     td { padding: 0.7rem; border-bottom: 1px solid #D7CCC8; }
-    .approve { background: var(--primary); color: white; }
-    .reject { background: #C44536; color: white; }
     .status-badge { padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600; font-size: 0.85rem; }
     .Pending { background: #FFF3E0; color: #E65100; }
     .Approved { background: #E0F2F1; color: #00695C; }
     .Rejected { background: #FFEBEE; color: #C44536; }
+    .error { color: #C44536; margin-top: 1rem; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white; border-radius: 16px; padding: 2rem; max-width: 800px; width: 90%;
+      max-height: 80vh; overflow-y: auto;
+    }
+    .modal-close { float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+    .section { margin-top: 1.5rem; }
+    .section h3 { color: var(--primary); margin-bottom: 0.5rem; }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .photo-grid img { max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #D7CCC8; }
   </style>
 </head>
 <body>
@@ -34,11 +52,11 @@
     <h2>🔐 Director Login</h2>
     <input type="text" id="loginName" placeholder="Full Name">
     <input type="password" id="loginPassword" placeholder="Password">
-    <button class="btn" onclick="attemptLogin()">Login</button>
+    <button class="btn approve" onclick="attemptLogin()">Login</button>
     <div class="error" id="loginError"></div>
   </div>
 
-  <!-- Dashboard (hidden until login) -->
+  <!-- Main Dashboard -->
   <div id="dashboard" class="container hidden">
     <h1>📋 Director Dashboard – Daily Reports</h1>
     <p>Logged in as <span id="loggedUser"></span> | <a href="#" onclick="logout()">Logout</a></p>
@@ -47,10 +65,22 @@
     <div id="message" class="error"></div>
   </div>
 
-  <script>
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec'; // ← CHANGE
+  <!-- Modal (hidden) -->
+  <div id="reportModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">✖</button>
+      <div id="modalContent"></div>
+      <div style="margin-top:1rem; text-align:center;">
+        <button class="btn approve" id="modalApproveBtn">Approve</button>
+        <button class="btn reject" id="modalRejectBtn">Reject</button>
+      </div>
+    </div>
+  </div>
 
-    // Check session
+  <script>
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec'; // ← CHANGE THIS
+
+    let currentReportId = null;
     const loggedUser = sessionStorage.getItem('hdcre_director');
     if (loggedUser) {
       showDashboard(loggedUser);
@@ -67,7 +97,7 @@
         if (data.success && data.role === 'Director') {
           sessionStorage.setItem('hdcre_director', name);
           showDashboard(name);
-        } else if (data.success && data.role !== 'Director') {
+        } else if (data.success) {
           errorDiv.textContent = 'This portal is only for Directors.';
         } else {
           errorDiv.textContent = 'Invalid credentials.';
@@ -98,30 +128,110 @@
             html += `<tr>
               <td>${r.id}</td><td>${r.site}</td><td>${r.date}</td><td>${r.reName}</td>
               <td><span class="status-badge ${r.status}">${r.status}</span></td>
-              <td>`;
+              <td>
+                <button class="btn view" onclick="viewReport('${r.id}')">View</button>`;
             if (r.status === 'Pending') {
               html += `<button class="btn approve" onclick="approveReport('${r.id}')">Approve</button>
                        <button class="btn reject" onclick="rejectReport('${r.id}')">Reject</button>`;
-            } else {
-              html += `<em>${r.status}</em>`;
             }
             html += `</td></tr>`;
           });
         }
         html += `</table>`;
         document.getElementById('reportsTable').innerHTML = html;
-      } catch(e) { document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load.</p>'; }
+      } catch(e) {
+        document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load.</p>';
+      }
     }
 
-    async function approveReport(id) {
-      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: id, directorEmail: loggedUser }) });
+    async function viewReport(reportId) {
+      currentReportId = reportId;
+      try {
+        const res = await fetch(`${API_BASE}?endpoint=reportDetail&reportId=${reportId}`);
+        const data = await res.json();
+        if (data.success) {
+          const report = data.report;
+          let html = `<h2>Report: ${report.site} – ${report.date}</h2>
+            <p><strong>RE:</strong> ${report.reName} | <strong>Weather:</strong> ${report.weatherAM} / ${report.weatherPM}</p>
+            <p><strong>Summary:</strong> ${report.activitySummary}</p>`;
+
+          // Tasks
+          if (report.tasks.length) {
+            html += `<div class="section"><h3>Work Progress</h3><table><tr><th>Task</th><th>Unit</th><th>Planned QTY</th><th>Executed QTY</th><th>Completion %</th></tr>`;
+            report.tasks.forEach(t => {
+              html += `<tr><td>${t.name}</td><td>${t.unit||''}</td><td>${t.plannedQty??''}</td><td>${t.executedQty}</td><td>${t.completion ? t.completion.toFixed(1)+'%' : ''}</td></tr>`;
+            });
+            html += `</table></div>`;
+          }
+
+          // Workforce
+          if (report.workforce.length) {
+            html += `<div class="section"><h3>Workforce</h3><table><tr><th>Labor Type</th><th>Planned</th><th>Available</th><th>Comments</th></tr>`;
+            report.workforce.forEach(w => {
+              html += `<tr><td>${w['Labor Type']}</td><td>${w.Planned}</td><td>${w.Available}</td><td>${w.Comments||''}</td></tr>`;
+            });
+            html += `</table></div>`;
+          }
+
+          // Equipment
+          if (report.equipment.length) {
+            html += `<div class="section"><h3>Equipment</h3><table><tr><th>ID</th><th>Type</th><th>Qty</th><th>Condition</th><th>Comments</th></tr>`;
+            report.equipment.forEach(e => {
+              html += `<tr><td>${e['Equipment ID']}</td><td>${e.Type}</td><td>${e.Quantity}</td><td>${e['Working Condition']}</td><td>${e.Comments||''}</td></tr>`;
+            });
+            html += `</table></div>`;
+          }
+
+          // Materials
+          if (report.materials.length) {
+            html += `<div class="section"><h3>Materials</h3><table><tr><th>ID</th><th>Description</th><th>Unit</th><th>Qty</th><th>Type</th></tr>`;
+            report.materials.forEach(m => {
+              html += `<tr><td>${m['Material ID']}</td><td>${m.Description}</td><td>${m.Unit}</td><td>${m.Quantity}</td><td>${m.Type}</td></tr>`;
+            });
+            html += `</table></div>`;
+          }
+
+          // Photos
+          if (report.photos.length) {
+            html += `<div class="section"><h3>Photos</h3><div class="photo-grid">`;
+            report.photos.forEach(p => {
+              if (p.url) html += `<img src="${p.url}" alt="Site photo">`;
+            });
+            html += `</div></div>`;
+          }
+
+          document.getElementById('modalContent').innerHTML = html;
+          document.getElementById('reportModal').classList.remove('hidden');
+        } else {
+          alert('Could not load report details.');
+        }
+      } catch (e) {
+        alert('Network error while loading report.');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('reportModal').classList.add('hidden');
+      currentReportId = null;
+    }
+
+    async function approveReport(reportId) {
+      if (reportId) currentReportId = reportId; // if called from modal
+      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: currentReportId, directorEmail: loggedUser }) });
+      closeModal();
       loadReports();
     }
 
-    async function rejectReport(id) {
-      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: id, directorEmail: loggedUser + ' [REJECTED]' }) });
+    async function rejectReport(reportId) {
+      if (reportId) currentReportId = reportId;
+      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: currentReportId, directorEmail: loggedUser + ' [REJECTED]' }) });
+      closeModal();
       loadReports();
     }
+
+    // Attach modal button events
+    document.getElementById('modalApproveBtn').addEventListener('click', () => approveReport());
+    document.getElementById('modalRejectBtn').addEventListener('click', () => rejectReport());
   </script>
 </body>
 </html>
