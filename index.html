@@ -25,7 +25,11 @@
     .Pending { background: #FFF3E0; color: #E65100; }
     .Approved { background: #E0F2F1; color: var(--primary); }
     .Rejected { background: #FFEBEE; color: var(--danger); }
-    .error { color: var(--danger); margin-top: 0.5rem; }
+    .error { color: var(--danger); margin-top: 0.5rem; min-height: 1.2rem; font-size: 0.9rem; }
+    .login-logo { max-width: 140px; margin-bottom: 0.5rem; }
+    .dashboard-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .dashboard-header img { height: 36px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     /* Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; border-radius: 16px; padding: 1.5rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
@@ -43,15 +47,19 @@
 </head>
 <body>
   <div id="loginScreen" class="login-box">
-    <h2>&#128274; Director Login</h2>
+    <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo" class="login-logo">
+    <h2>Director Login</h2>
     <input type="text" id="loginName" placeholder="Full Name">
     <input type="password" id="loginPassword" placeholder="Password">
-    <button class="btn approve" onclick="attemptLogin()" style="width:100%;padding:0.6rem;margin-top:0.5rem">Login</button>
+    <button class="btn approve" id="loginBtn" onclick="attemptLogin()" style="width:100%;padding:0.6rem;margin-top:0.5rem">Login</button>
     <div class="error" id="loginError"></div>
   </div>
 
   <div id="dashboard" class="container hidden">
-    <h1>&#128203; Director Dashboard – Daily Reports</h1>
+    <div class="dashboard-header">
+      <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo">
+      <h1 style="margin:0">Director Dashboard – Daily Reports</h1>
+    </div>
     <p>Logged in as <span id="loggedUser"></span> | <a href="#" onclick="logout()">Logout</a>
        &nbsp;&nbsp;<button class="btn view" onclick="loadReports()">&#128260; Refresh</button></p>
     <div id="reportsTable">Loading...</div>
@@ -80,14 +88,44 @@
       const name = document.getElementById('loginName').value.trim();
       const pw = document.getElementById('loginPassword').value.trim();
       const err = document.getElementById('loginError');
-      if (!name || !pw) { err.textContent = 'Enter name and password.'; return; }
+      const btn = document.getElementById('loginBtn');
+      err.textContent = '';
+      err.style.color = '#C44536';
+      if (!name || !pw) { err.textContent = 'Please enter both Name and Password.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Checking...';
+
+      const url = `${API_BASE}?action=login&name=${encodeURIComponent(name)}&password=${encodeURIComponent(pw)}`;
+      console.log('[HDCRS-Director] Login attempt for:', name);
+
       try {
-        const r = await fetch(`${API_BASE}?action=login&name=${encodeURIComponent(name)}&password=${encodeURIComponent(pw)}`);
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('Server returned ' + r.status);
         const d = await r.json();
-        if (d.success && d.role === 'Director') { sessionStorage.setItem('hdcre_director', name); showDashboard(name); }
-        else if (d.success) err.textContent = 'This portal is only for Directors.';
-        else err.textContent = 'Invalid credentials.';
-      } catch (e) { err.textContent = 'Network error.'; }
+        console.log('[HDCRS-Director] Response:', JSON.stringify(d));
+
+        if (d.success && d.role === 'Director') {
+          sessionStorage.setItem('hdcre_director', name);
+          showDashboard(name);
+        } else if (d.success && d.role) {
+          err.textContent = 'Access denied — your role is: ' + d.role + '. This portal is for Directors only.';
+        } else if (d.success) {
+          err.textContent = 'Login OK but no role assigned. Ask admin to set your Role in Staff_Accounts.';
+        } else {
+          err.textContent = 'Invalid name or password. Check Staff_Accounts sheet in Google Sheets.';
+        }
+      } catch (e) {
+        console.error('[HDCRS-Director] Login error:', e);
+        if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+          err.textContent = 'Network error — cannot reach server. Check API_BASE URL or Apps Script deployment.';
+        } else {
+          err.textContent = 'Error: ' + e.message;
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Login';
+      }
     }
 
     function showDashboard(name) {
