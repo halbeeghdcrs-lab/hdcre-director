@@ -3,106 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Director Dashboard – HDCRS</title>
+  <title>Director Dashboard – HDCRS V4</title>
   <style>
-    :root { --primary: #00695C; --bg: #F5E4D0; --card: white; --text: #3E2723; }
-    body { background: var(--bg); font-family: system-ui, sans-serif; margin: 0; padding: 2rem; display: flex; justify-content: center; }
-    .login-box, .container {
-      max-width: 1200px; width: 100%; background: var(--card); border-radius: 20px; padding: 2rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-    }
-    .login-box { max-width: 400px; text-align: center; margin-top: 4rem; }
-    .login-box h2, .container h1 { color: var(--primary); }
-    .login-box input { width: 100%; padding: 0.7rem; margin: 0.5rem 0; border: 1px solid #D7CCC8; border-radius: 8px; }
-    .btn { padding: 0.5rem 1.2rem; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; margin: 0.2rem; }
+    :root { --primary: #00695C; --primary-dark: #004D40; --bg: #F5E4D0; --card: white; --text: #3E2723; --border: #D7CCC8; --danger: #C44536; --warn: #E65100; --success: #2E7D32; }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); font-family: system-ui, sans-serif; margin: 0; padding: 1rem; color: var(--text); }
+    .login-box, .container { max-width: 1300px; width: 100%; margin: 0 auto; background: var(--card); border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .login-box { max-width: 400px; text-align: center; margin-top: 3rem; }
+    .login-box h2, .container h1 { color: var(--primary); margin: 0 0 1rem; }
+    .login-box input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; border: 1px solid var(--border); border-radius: 8px; }
+    .btn { padding: 0.4rem 1rem; border: none; border-radius: 16px; cursor: pointer; font-weight: 600; margin: 0.15rem; font-size: 0.85rem; }
     .approve { background: var(--primary); color: white; }
-    .reject { background: #C44536; color: white; }
+    .reject { background: var(--danger); color: white; }
     .view { background: #5D4037; color: white; }
+    .btn:hover { opacity: 0.85; }
     .hidden { display: none !important; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th { background: #F3E7DA; color: var(--text); padding: 0.8rem; text-align: left; border-bottom: 2px solid var(--primary); }
-    td { padding: 0.7rem; border-bottom: 1px solid #D7CCC8; }
-    .status-badge { padding: 0.2rem 0.8rem; border-radius: 12px; font-weight: 600; font-size: 0.85rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
+    th { background: #f3e7da; color: var(--text); padding: 0.5rem; text-align: left; border-bottom: 2px solid var(--primary); font-weight: 600; }
+    td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
+    .badge { padding: 0.15rem 0.6rem; border-radius: 10px; font-weight: 600; font-size: 0.8rem; display: inline-block; }
     .Pending { background: #FFF3E0; color: #E65100; }
-    .Approved { background: #E0F2F1; color: #00695C; }
-    .Rejected { background: #FFEBEE; color: #C44536; }
-    .error { color: #C44536; margin-top: 1rem; }
-
+    .Approved { background: #E0F2F1; color: var(--primary); }
+    .Rejected { background: #FFEBEE; color: var(--danger); }
+    .error { color: var(--danger); margin-top: 0.5rem; }
     /* Modal */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white; border-radius: 16px; padding: 2rem; max-width: 800px; width: 90%;
-      max-height: 80vh; overflow-y: auto;
-    }
-    .modal-close { float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-    .section { margin-top: 1.5rem; }
-    .section h3 { color: var(--primary); margin-bottom: 0.5rem; }
-    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-    .photo-grid img { max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #D7CCC8; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; border-radius: 16px; padding: 1.5rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
+    .modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #999; }
+    .modal-actions { text-align: center; margin-top: 1rem; }
+    .section { margin: 1.2rem 0 0.5rem; }
+    .section h3 { color: var(--primary); margin: 0 0 0.3rem; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.2rem; }
+    .section table { font-size: 0.82rem; }
+    .meta-grid { display: grid; grid-template-columns: 160px 1fr; gap: 0.2rem 10px; font-size: 0.9rem; }
+    .meta-grid .label { font-weight: 600; color: #555; }
+    .reject-reason { width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px; margin: 0.5rem 0; font-family: inherit; }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .photo-grid img { max-width: 130px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
-
-  <!-- Login Screen -->
   <div id="loginScreen" class="login-box">
-    <h2>🔐 Director Login</h2>
+    <h2>&#128274; Director Login</h2>
     <input type="text" id="loginName" placeholder="Full Name">
     <input type="password" id="loginPassword" placeholder="Password">
-    <button class="btn approve" onclick="attemptLogin()">Login</button>
+    <button class="btn approve" onclick="attemptLogin()" style="width:100%;padding:0.6rem;margin-top:0.5rem">Login</button>
     <div class="error" id="loginError"></div>
   </div>
 
-  <!-- Main Dashboard -->
   <div id="dashboard" class="container hidden">
-    <h1>📋 Director Dashboard – Daily Reports</h1>
-    <p>Logged in as <span id="loggedUser"></span> | <a href="#" onclick="logout()">Logout</a></p>
-    <button class="btn" onclick="loadReports()">🔄 Refresh</button>
+    <h1>&#128203; Director Dashboard – Daily Reports</h1>
+    <p>Logged in as <span id="loggedUser"></span> | <a href="#" onclick="logout()">Logout</a>
+       &nbsp;&nbsp;<button class="btn view" onclick="loadReports()">&#128260; Refresh</button></p>
     <div id="reportsTable">Loading...</div>
     <div id="message" class="error"></div>
   </div>
 
-  <!-- Modal (hidden) -->
   <div id="reportModal" class="modal-overlay hidden">
     <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()">✖</button>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
       <div id="modalContent"></div>
-      <div style="margin-top:1rem; text-align:center;">
-        <button class="btn approve" id="modalApproveBtn">Approve</button>
-        <button class="btn reject" id="modalRejectBtn">Reject</button>
+      <div class="modal-actions">
+        <textarea id="rejectReason" class="reject-reason" placeholder="Reason for rejection (optional)"></textarea>
+        <button class="btn approve" id="modalApproveBtn">&#10003; Approve</button>
+        <button class="btn reject" id="modalRejectBtn">&#10007; Reject</button>
       </div>
     </div>
   </div>
 
   <script>
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec'; // ← CHANGE THIS
-
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec';
     let currentReportId = null;
     const loggedUser = sessionStorage.getItem('hdcre_director');
-    if (loggedUser) {
-      showDashboard(loggedUser);
-    }
+    if (loggedUser) showDashboard(loggedUser);
 
     async function attemptLogin() {
       const name = document.getElementById('loginName').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      const errorDiv = document.getElementById('loginError');
-      if (!name || !password) { errorDiv.textContent = 'Enter name and password.'; return; }
+      const pw = document.getElementById('loginPassword').value.trim();
+      const err = document.getElementById('loginError');
+      if (!name || !pw) { err.textContent = 'Enter name and password.'; return; }
       try {
-        const res = await fetch(`${API_BASE}?action=login&name=${encodeURIComponent(name)}&password=${encodeURIComponent(password)}`);
-        const data = await res.json();
-        if (data.success && data.role === 'Director') {
-          sessionStorage.setItem('hdcre_director', name);
-          showDashboard(name);
-        } else if (data.success) {
-          errorDiv.textContent = 'This portal is only for Directors.';
-        } else {
-          errorDiv.textContent = 'Invalid credentials.';
-        }
-      } catch (e) { errorDiv.textContent = 'Network error.'; }
+        const r = await fetch(`${API_BASE}?action=login&name=${encodeURIComponent(name)}&password=${encodeURIComponent(pw)}`);
+        const d = await r.json();
+        if (d.success && d.role === 'Director') { sessionStorage.setItem('hdcre_director', name); showDashboard(name); }
+        else if (d.success) err.textContent = 'This portal is only for Directors.';
+        else err.textContent = 'Invalid credentials.';
+      } catch (e) { err.textContent = 'Network error.'; }
     }
 
     function showDashboard(name) {
@@ -111,127 +96,158 @@
       document.getElementById('loggedUser').textContent = name;
       loadReports();
     }
-
-    function logout() {
-      sessionStorage.removeItem('hdcre_director');
-      location.reload();
-    }
+    function logout() { sessionStorage.removeItem('hdcre_director'); location.reload(); }
 
     async function loadReports() {
       try {
-        const res = await fetch(`${API_BASE}?endpoint=reports`);
-        const reports = await res.json();
-        let html = `<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Status</th><th>Action</th></tr>`;
-        if (reports.length === 0) html += `<tr><td colspan="6">No reports.</td></tr>`;
-        else {
-          reports.forEach(r => {
-            html += `<tr>
-              <td>${r.id}</td><td>${r.site}</td><td>${r.date}</td><td>${r.reName}</td>
-              <td><span class="status-badge ${r.status}">${r.status}</span></td>
-              <td>
-                <button class="btn view" onclick="viewReport('${r.id}')">View</button>`;
-            if (r.status === 'Pending') {
-              html += `<button class="btn approve" onclick="approveReport('${r.id}')">Approve</button>
-                       <button class="btn reject" onclick="rejectReport('${r.id}')">Reject</button>`;
-            }
-            html += `</td></tr>`;
-          });
-        }
-        html += `</table>`;
+        const r = await fetch(`${API_BASE}?endpoint=reports`);
+        const reports = await r.json();
+        let html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
+        if (reports.length === 0) html += '<tr><td colspan="8">No reports.</td></tr>';
+        else reports.forEach(r => {
+          html += `<tr><td style="font-size:0.75rem">${r.id}</td><td>${r.site}</td><td>${r.date}</td><td>${r.reName}</td>
+            <td>${r.weather}</td><td>${r.efficiency || '-'}</td>
+            <td><span class="badge ${r.status}">${r.status}</span></td>
+            <td><button class="btn view" onclick="viewReport('${r.id}')">View</button>`;
+          if (r.status === 'Pending') html += ` <button class="btn approve" onclick="quickApprove('${r.id}')">Approve</button>`;
+          html += `</td></tr>`;
+        });
+        html += '</table>';
         document.getElementById('reportsTable').innerHTML = html;
-      } catch(e) {
-        document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load.</p>';
-      }
+      } catch (e) { document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load.</p>'; }
     }
 
     async function viewReport(reportId) {
       currentReportId = reportId;
       try {
-        const res = await fetch(`${API_BASE}?endpoint=reportDetail&reportId=${reportId}`);
-        const data = await res.json();
-        if (data.success) {
-          const report = data.report;
-          let html = `<h2>Report: ${report.site} – ${report.date}</h2>
-            <p><strong>RE:</strong> ${report.reName} | <strong>Weather:</strong> ${report.weatherAM} / ${report.weatherPM}</p>
-            <p><strong>Summary:</strong> ${report.activitySummary}</p>`;
+        const r = await fetch(`${API_BASE}?endpoint=reportDetail&reportId=${reportId}`);
+        const data = await r.json();
+        if (!data.success) { alert('Could not load report.'); return; }
+        const rp = data.report;
+        let h = `<h2 style="color:var(--primary);margin-top:0">${rp.site} – ${rp.date}</h2>`;
+        h += `<div class="meta-grid"><span class="label">RE:</span><span>${rp.reName}</span>
+          <span class="label">Weather:</span><span>${rp.weatherAM} / ${rp.weatherPM}</span>
+          <span class="label">Efficiency:</span><span>${rp.efficiency || 'N/A'}</span></div>`;
+        h += `<p><strong>Activity Summary:</strong> ${rp.activitySummary || '-'}</p>`;
 
-          // Tasks
-          if (report.tasks.length) {
-            html += `<div class="section"><h3>Work Progress</h3><table><tr><th>Task</th><th>Unit</th><th>Planned QTY</th><th>Executed QTY</th><th>Completion %</th></tr>`;
-            report.tasks.forEach(t => {
-              html += `<tr><td>${t.name}</td><td>${t.unit||''}</td><td>${t.plannedQty??''}</td><td>${t.executedQty}</td><td>${t.completion ? t.completion.toFixed(1)+'%' : ''}</td></tr>`;
-            });
-            html += `</table></div>`;
-          }
-
-          // Workforce
-          if (report.workforce.length) {
-            html += `<div class="section"><h3>Workforce</h3><table><tr><th>Labor Type</th><th>Planned</th><th>Available</th><th>Comments</th></tr>`;
-            report.workforce.forEach(w => {
-              html += `<tr><td>${w['Labor Type']}</td><td>${w.Planned}</td><td>${w.Available}</td><td>${w.Comments||''}</td></tr>`;
-            });
-            html += `</table></div>`;
-          }
-
-          // Equipment
-          if (report.equipment.length) {
-            html += `<div class="section"><h3>Equipment</h3><table><tr><th>ID</th><th>Type</th><th>Qty</th><th>Condition</th><th>Comments</th></tr>`;
-            report.equipment.forEach(e => {
-              html += `<tr><td>${e['Equipment ID']}</td><td>${e.Type}</td><td>${e.Quantity}</td><td>${e['Working Condition']}</td><td>${e.Comments||''}</td></tr>`;
-            });
-            html += `</table></div>`;
-          }
-
-          // Materials
-          if (report.materials.length) {
-            html += `<div class="section"><h3>Materials</h3><table><tr><th>ID</th><th>Description</th><th>Unit</th><th>Qty</th><th>Type</th></tr>`;
-            report.materials.forEach(m => {
-              html += `<tr><td>${m['Material ID']}</td><td>${m.Description}</td><td>${m.Unit}</td><td>${m.Quantity}</td><td>${m.Type}</td></tr>`;
-            });
-            html += `</table></div>`;
-          }
-
-          // Photos
-          if (report.photos.length) {
-            html += `<div class="section"><h3>Photos</h3><div class="photo-grid">`;
-            report.photos.forEach(p => {
-              if (p.url) html += `<img src="${p.url}" alt="Site photo">`;
-            });
-            html += `</div></div>`;
-          }
-
-          document.getElementById('modalContent').innerHTML = html;
-          document.getElementById('reportModal').classList.remove('hidden');
-        } else {
-          alert('Could not load report details.');
+        // Block Status
+        if (rp.blockStatuses?.length) {
+          h += '<div class="section"><h3>Block Status Overview</h3><table><tr><th>Block</th><th>Status</th><th>Target Achievement</th><th>Performance</th></tr>';
+          rp.blockStatuses.forEach(b => h += `<tr><td>${b['Block Name']}</td><td>${b['Block Status']}</td><td>${b['Target Achievement'] || ''}</td><td>${b['Performance Status'] || ''}</td></tr>`);
+          h += '</table></div>';
         }
-      } catch (e) {
-        alert('Network error while loading report.');
-      }
+
+        // Work Progress
+        if (rp.tasks?.length) {
+          h += '<div class="section"><h3>Work Progress</h3><table><tr><th>Block</th><th>Task</th><th>Unit</th><th>Planned</th><th>Executed</th><th>Daily %</th><th>Cumulative %</th><th>Remarks</th></tr>';
+          rp.tasks.forEach(t => h += `<tr><td>${t.Block || ''}</td><td>${t['Task Name']}</td><td>${t.Unit || ''}</td><td>${t['Planned QTY'] || ''}</td><td>${t['Executed QTY'] || ''}</td><td>${t['Daily Completion %'] != null ? parseFloat(t['Daily Completion %']).toFixed(1)+'%' : ''}</td><td>${t['Overall Completion %'] != null ? parseFloat(t['Overall Completion %']).toFixed(1)+'%' : ''}</td><td>${t.Remarks || ''}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Workforce
+        if (rp.workforce?.length) {
+          h += '<div class="section"><h3>Workforce</h3><table><tr><th>Type</th><th>Planned</th><th>Available</th><th>Comments</th></tr>';
+          rp.workforce.forEach(w => h += `<tr><td>${w['Labor Type']}</td><td>${w.Planned}</td><td>${w.Available}</td><td>${w.Comments || ''}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Equipment
+        if (rp.equipment?.length) {
+          h += '<div class="section"><h3>Equipment</h3><table><tr><th>Type</th><th>Qty</th><th>Condition</th><th>Comments</th></tr>';
+          rp.equipment.forEach(e => h += `<tr><td>${e['Equipment Type']}</td><td>${e.Quantity}</td><td>${e['Working Condition']}</td><td>${e.Comments || ''}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Materials
+        const showMat = (title, items) => {
+          if (!items?.length) return '';
+          let s = `<div class="section"><h3>${title}</h3><table><tr><th>Description</th><th>Unit</th><th>Qty</th><th>Block</th></tr>`;
+          items.forEach(m => s += `<tr><td>${m.Description}</td><td>${m.Unit}</td><td>${m.Quantity}</td><td>${m['Allocated Block'] || ''}</td></tr>`);
+          return s + '</table></div>';
+        };
+        h += showMat('Materials Delivered', rp.materialsDelivered);
+        h += showMat('Materials On Site', rp.materialsOnSite);
+
+        // Issues
+        if (rp.issues?.length) {
+          h += '<div class="section"><h3>Issues &amp; Delays</h3><table><tr><th>Block</th><th>Details</th></tr>';
+          rp.issues.forEach(i => h += `<tr><td>${i.Block || ''}</td><td>${i['Issue Details']}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Tests
+        if (rp.tests?.length) {
+          h += '<div class="section"><h3>Tests Conducted</h3><table><tr><th>Test</th><th>Block</th><th>Result</th></tr>';
+          rp.tests.forEach(t => h += `<tr><td>${t.Test}</td><td>${t.Block || ''}</td><td>${t.Result || ''}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Correspondences
+        if (rp.correspondences?.length) {
+          h += '<div class="section"><h3>Correspondences</h3><table><tr><th>Date</th><th>From</th><th>To</th><th>Subject</th></tr>';
+          rp.correspondences.forEach(c => h += `<tr><td>${c.Date}</td><td>${c.From}</td><td>${c.To}</td><td>${c.Subject}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Safety
+        if (rp.safetyIssues?.length) {
+          h += '<div class="section"><h3>Safety Issues</h3><table><tr><th>Issue</th><th>Block</th><th>Action Taken</th></tr>';
+          rp.safetyIssues.forEach(s => h += `<tr><td>${s.Issue}</td><td>${s.Block || ''}</td><td>${s['Action Taken'] || ''}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Stakeholder
+        if (rp.stakeholderContribution?.length) {
+          h += '<div class="section"><h3>Stakeholder Contribution</h3><table><tr><th>Stakeholder</th><th>Contribution</th></tr>';
+          rp.stakeholderContribution.forEach(s => h += `<tr><td>${s.Stakeholder}</td><td>${s.Contribution}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Performance
+        if (rp.performance?.length) {
+          h += '<div class="section"><h3>Performance Analysis</h3><p><strong>Efficiency:</strong> ${rp.efficiency || 'N/A'}</p>';
+          h += '<table><tr><th>Block</th><th>Target Achievement</th><th>Status</th></tr>';
+          rp.performance.forEach(p => h += `<tr><td>${p.Block}</td><td>${p['Daily Target Achievement'] || ''}</td><td>${p.Status}</td></tr>`);
+          h += '</table>';
+          if (rp.recommendations) h += `<p><strong>Recommendations:</strong></p><pre style="white-space:pre-wrap;font-size:0.85rem">${rp.recommendations}</pre>`;
+          h += '</div>';
+        }
+
+        // Site Orders
+        if (rp.siteOrders?.length) {
+          h += '<div class="section"><h3>Site Orders</h3><table><tr><th>Order No.</th><th>Issued To</th><th>Instruction</th><th>Deadline</th></tr>';
+          rp.siteOrders.forEach(o => h += `<tr><td>${o['Order No']}</td><td>${o['Issued To']}</td><td>${o.Instruction}</td><td>${o.Deadline || ''}</td></tr>`);
+          h += '</table></div>';
+        }
+
+        // Hold Points
+        if (rp.holdPointRequests) h += `<div class="section"><h3>Hold-Point Requests</h3><p>${rp.holdPointRequests}</p></div>`;
+
+        // Photos
+        if (rp.photos?.length) {
+          h += '<div class="section"><h3>Photos</h3><div class="photo-grid">';
+          rp.photos.forEach(p => { if (p.url) h += `<img src="${p.url}" alt="${p.block || 'photo'}" title="${p.caption || ''}">`; });
+          h += '</div></div>';
+        }
+
+        document.getElementById('modalContent').innerHTML = h;
+        document.getElementById('reportModal').classList.remove('hidden');
+        document.getElementById('rejectReason').value = '';
+      } catch (e) { alert('Network error loading report.'); }
     }
 
-    function closeModal() {
-      document.getElementById('reportModal').classList.add('hidden');
-      currentReportId = null;
+    function closeModal() { document.getElementById('reportModal').classList.add('hidden'); currentReportId = null; }
+
+    async function approveReport(id, isReject) {
+      const reason = isReject ? document.getElementById('rejectReason').value.trim() : '';
+      const email = isReject ? `${loggedUser} [REJECTED]${reason ? ' - ' + reason : ''}` : loggedUser;
+      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: id || currentReportId, directorEmail: email }) });
+      closeModal(); loadReports();
     }
 
-    async function approveReport(reportId) {
-      if (reportId) currentReportId = reportId; // if called from modal
-      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: currentReportId, directorEmail: loggedUser }) });
-      closeModal();
-      loadReports();
-    }
-
-    async function rejectReport(reportId) {
-      if (reportId) currentReportId = reportId;
-      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: currentReportId, directorEmail: loggedUser + ' [REJECTED]' }) });
-      closeModal();
-      loadReports();
-    }
-
-    // Attach modal button events
-    document.getElementById('modalApproveBtn').addEventListener('click', () => approveReport());
-    document.getElementById('modalRejectBtn').addEventListener('click', () => rejectReport());
+    function quickApprove(id) { approveReport(id, false); }
+    document.getElementById('modalApproveBtn').addEventListener('click', () => approveReport(null, false));
+    document.getElementById('modalRejectBtn').addEventListener('click', () => approveReport(null, true));
   </script>
 </body>
 </html>
