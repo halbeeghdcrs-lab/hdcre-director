@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Director Dashboard – HDCRS V4</title>
+  <title>Director Dashboard - HDCRS V4</title>
   <style>
     :root { --primary: #00695C; --primary-dark: #004D40; --bg: #F5E4D0; --card: white; --text: #3E2723; --border: #D7CCC8; --danger: #C44536; --warn: #E65100; --success: #2E7D32; }
     * { box-sizing: border-box; }
@@ -30,7 +30,6 @@
     .dashboard-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .dashboard-header img { height: 36px; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    /* Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; border-radius: 16px; padding: 1.5rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
     .modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #999; }
@@ -51,44 +50,52 @@
     <h2>Director Login</h2>
     <input type="text" id="loginName" placeholder="Full Name">
     <input type="password" id="loginPassword" placeholder="Password">
-    <button class="btn approve" id="loginBtn" onclick="attemptLogin()" style="width:100%;padding:0.6rem;margin-top:0.5rem">Login</button>
+    <button class="btn approve" id="loginBtn" style="width:100%;padding:0.6rem;margin-top:0.5rem">Login</button>
     <div class="error" id="loginError"></div>
   </div>
 
   <div id="dashboard" class="container hidden">
     <div class="dashboard-header">
       <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo">
-      <h1 style="margin:0">Director Dashboard – Daily Reports</h1>
+      <h1 style="margin:0">Director Dashboard - Daily Reports</h1>
     </div>
-    <p>Logged in as <span id="loggedUser"></span> | <a href="#" onclick="logout()">Logout</a>
-       &nbsp;&nbsp;<button class="btn view" onclick="loadReports()">&#128260; Refresh</button></p>
+    <p>Logged in as <span id="loggedUser"></span> | <a href="#" id="logoutLink">Logout</a>
+       &nbsp;&nbsp;<button class="btn view" id="refreshBtn">Refresh</button></p>
     <div id="reportsTable">Loading...</div>
     <div id="message" class="error"></div>
   </div>
 
   <div id="reportModal" class="modal-overlay hidden">
     <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <button class="modal-close" id="modalCloseBtn">X</button>
       <div id="modalContent"></div>
       <div class="modal-actions">
         <textarea id="rejectReason" class="reject-reason" placeholder="Reason for rejection (optional)"></textarea>
-        <button class="btn approve" id="modalApproveBtn">&#10003; Approve</button>
-        <button class="btn reject" id="modalRejectBtn">&#10007; Reject</button>
+        <button class="btn approve" id="modalApproveBtn">Approve</button>
+        <button class="btn reject" id="modalRejectBtn">Reject</button>
       </div>
     </div>
   </div>
 
   <script>
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec';
-    let currentReportId = null;
-    const loggedUser = sessionStorage.getItem('hdcre_director');
-    if (loggedUser) showDashboard(loggedUser);
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec';
+    var currentReportId = null;
+    var loggedUser = sessionStorage.getItem('hdcre_director');
 
-    async function attemptLogin() {
-      const name = document.getElementById('loginName').value.trim();
-      const pw = document.getElementById('loginPassword').value.trim();
-      const err = document.getElementById('loginError');
-      const btn = document.getElementById('loginBtn');
+    document.getElementById('loginBtn').addEventListener('click', attemptLogin);
+    document.getElementById('logoutLink').addEventListener('click', function(e) { e.preventDefault(); logout(); });
+    document.getElementById('refreshBtn').addEventListener('click', loadReports);
+    document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+    document.getElementById('modalApproveBtn').addEventListener('click', function() { approveReport(null, false); });
+    document.getElementById('modalRejectBtn').addEventListener('click', function() { approveReport(null, true); });
+
+    if (loggedUser) { showDashboard(loggedUser); }
+
+    function attemptLogin() {
+      var name = document.getElementById('loginName').value.trim();
+      var pw = document.getElementById('loginPassword').value.trim();
+      var err = document.getElementById('loginError');
+      var btn = document.getElementById('loginBtn');
       err.textContent = '';
       err.style.color = '#C44536';
       if (!name || !pw) { err.textContent = 'Please enter both Name and Password.'; return; }
@@ -96,36 +103,40 @@
       btn.disabled = true;
       btn.textContent = 'Checking...';
 
-      const url = `${API_BASE}?action=login&name=${encodeURIComponent(name)}&password=${encodeURIComponent(pw)}`;
-      console.log('[HDCRS-Director] Login attempt for:', name);
+      var url = API_BASE + '?action=login&name=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pw);
+      console.log('[Director] Login attempt for: ' + name);
 
-      try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error('Server returned ' + r.status);
-        const d = await r.json();
-        console.log('[HDCRS-Director] Response:', JSON.stringify(d));
-
-        if (d.success && d.role === 'Director') {
-          sessionStorage.setItem('hdcre_director', name);
-          showDashboard(name);
-        } else if (d.success && d.role) {
-          err.textContent = 'Access denied — your role is: ' + d.role + '. This portal is for Directors only.';
-        } else if (d.success) {
-          err.textContent = 'Login OK but no role assigned. Ask admin to set your Role in Staff_Accounts.';
-        } else {
-          err.textContent = 'Invalid name or password. Check Staff_Accounts sheet in Google Sheets.';
-        }
-      } catch (e) {
-        console.error('[HDCRS-Director] Login error:', e);
-        if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
-          err.textContent = 'Network error — cannot reach server. Check API_BASE URL or Apps Script deployment.';
-        } else {
-          err.textContent = 'Error: ' + e.message;
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Login';
-      }
+      fetch(url)
+        .then(function(r) {
+          console.log('[Director] Response status: ' + r.status);
+          if (!r.ok) throw new Error('Server returned ' + r.status);
+          return r.json();
+        })
+        .then(function(d) {
+          console.log('[Director] Response: ' + JSON.stringify(d));
+          if (d.success && d.role === 'Director') {
+            sessionStorage.setItem('hdcre_director', name);
+            showDashboard(name);
+          } else if (d.success && d.role) {
+            err.textContent = 'Access denied. Your role is: ' + d.role + '. This portal is for Directors only.';
+          } else if (d.success) {
+            err.textContent = 'Login OK but no role assigned. Check Staff_Accounts sheet.';
+          } else {
+            err.textContent = 'Invalid name or password. Check Staff_Accounts sheet.';
+          }
+        })
+        .catch(function(e) {
+          console.error('[Director] Login error: ' + e.message);
+          if (e.message.indexOf('Failed to fetch') !== -1) {
+            err.textContent = 'Network error. Cannot reach server.';
+          } else {
+            err.textContent = 'Error: ' + e.message;
+          }
+        })
+        .finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'Login';
+        });
     }
 
     function showDashboard(name) {
@@ -134,158 +145,216 @@
       document.getElementById('loggedUser').textContent = name;
       loadReports();
     }
-    function logout() { sessionStorage.removeItem('hdcre_director'); location.reload(); }
 
-    async function loadReports() {
-      try {
-        const r = await fetch(`${API_BASE}?endpoint=reports`);
-        const reports = await r.json();
-        let html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
-        if (reports.length === 0) html += '<tr><td colspan="8">No reports.</td></tr>';
-        else reports.forEach(r => {
-          html += `<tr><td style="font-size:0.75rem">${r.id}</td><td>${r.site}</td><td>${r.date}</td><td>${r.reName}</td>
-            <td>${r.weather}</td><td>${r.efficiency || '-'}</td>
-            <td><span class="badge ${r.status}">${r.status}</span></td>
-            <td><button class="btn view" onclick="viewReport('${r.id}')">View</button>`;
-          if (r.status === 'Pending') html += ` <button class="btn approve" onclick="quickApprove('${r.id}')">Approve</button>`;
-          html += `</td></tr>`;
+    function logout() {
+      sessionStorage.removeItem('hdcre_director');
+      location.reload();
+    }
+
+    function loadReports() {
+      fetch(API_BASE + '?endpoint=reports')
+        .then(function(r) { return r.json(); })
+        .then(function(reports) {
+          var html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
+          if (reports.length === 0) {
+            html += '<tr><td colspan="8">No reports.</td></tr>';
+          } else {
+            for (var i = 0; i < reports.length; i++) {
+              var r = reports[i];
+              html += '<tr><td style="font-size:0.75rem">' + r.id + '</td><td>' + r.site + '</td><td>' + r.date + '</td><td>' + r.reName + '</td>';
+              html += '<td>' + (r.weather || '') + '</td><td>' + (r.efficiency || '-') + '</td>';
+              html += '<td><span class="badge ' + r.status + '">' + r.status + '</span></td>';
+              html += '<td><button class="btn view" data-id="' + r.id + '">View</button>';
+              if (r.status === 'Pending') {
+                html += ' <button class="btn approve" data-id="' + r.id + '">Approve</button>';
+              }
+              html += '</td></tr>';
+            }
+          }
+          html += '</table>';
+          document.getElementById('reportsTable').innerHTML = html;
+
+          var viewBtns = document.querySelectorAll('[data-id]');
+          for (var j = 0; j < viewBtns.length; j++) {
+            viewBtns[j].addEventListener('click', function() {
+              var id = this.getAttribute('data-id');
+              if (this.classList.contains('approve')) { quickApprove(id); }
+              else { viewReport(id); }
+            });
+          }
+        })
+        .catch(function() {
+          document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load reports.</p>';
         });
-        html += '</table>';
-        document.getElementById('reportsTable').innerHTML = html;
-      } catch (e) { document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load.</p>'; }
     }
 
-    async function viewReport(reportId) {
+    function viewReport(reportId) {
       currentReportId = reportId;
-      try {
-        const r = await fetch(`${API_BASE}?endpoint=reportDetail&reportId=${reportId}`);
-        const data = await r.json();
-        if (!data.success) { alert('Could not load report.'); return; }
-        const rp = data.report;
-        let h = `<h2 style="color:var(--primary);margin-top:0">${rp.site} – ${rp.date}</h2>`;
-        h += `<div class="meta-grid"><span class="label">RE:</span><span>${rp.reName}</span>
-          <span class="label">Weather:</span><span>${rp.weatherAM} / ${rp.weatherPM}</span>
-          <span class="label">Efficiency:</span><span>${rp.efficiency || 'N/A'}</span></div>`;
-        h += `<p><strong>Activity Summary:</strong> ${rp.activitySummary || '-'}</p>`;
+      fetch(API_BASE + '?endpoint=reportDetail&reportId=' + reportId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success) { alert('Could not load report.'); return; }
+          var rp = data.report;
+          var h = '<h2 style="color:var(--primary);margin-top:0">' + rp.site + ' - ' + rp.date + '</h2>';
+          h += '<div class="meta-grid"><span class="label">RE:</span><span>' + rp.reName + '</span>';
+          h += '<span class="label">Weather:</span><span>' + (rp.weatherAM || '') + ' / ' + (rp.weatherPM || '') + '</span>';
+          h += '<span class="label">Efficiency:</span><span>' + (rp.efficiency || 'N/A') + '</span></div>';
+          h += '<p><strong>Activity Summary:</strong> ' + (rp.activitySummary || '-') + '</p>';
 
-        // Block Status
-        if (rp.blockStatuses?.length) {
-          h += '<div class="section"><h3>Block Status Overview</h3><table><tr><th>Block</th><th>Status</th><th>Target Achievement</th><th>Performance</th></tr>';
-          rp.blockStatuses.forEach(b => h += `<tr><td>${b['Block Name']}</td><td>${b['Block Status']}</td><td>${b['Target Achievement'] || ''}</td><td>${b['Performance Status'] || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.blockStatuses && rp.blockStatuses.length) {
+            h += '<div class="section"><h3>Block Status Overview</h3><table><tr><th>Block</th><th>Status</th><th>Target Achievement</th><th>Performance</th></tr>';
+            for (var i = 0; i < rp.blockStatuses.length; i++) {
+              var b = rp.blockStatuses[i];
+              h += '<tr><td>' + (b['Block Name'] || '') + '</td><td>' + (b['Block Status'] || '') + '</td><td>' + (b['Target Achievement'] || '') + '</td><td>' + (b['Performance Status'] || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Work Progress
-        if (rp.tasks?.length) {
-          h += '<div class="section"><h3>Work Progress</h3><table><tr><th>Block</th><th>Task</th><th>Unit</th><th>Planned</th><th>Executed</th><th>Daily %</th><th>Cumulative %</th><th>Remarks</th></tr>';
-          rp.tasks.forEach(t => h += `<tr><td>${t.Block || ''}</td><td>${t['Task Name']}</td><td>${t.Unit || ''}</td><td>${t['Planned QTY'] || ''}</td><td>${t['Executed QTY'] || ''}</td><td>${t['Daily Completion %'] != null ? parseFloat(t['Daily Completion %']).toFixed(1)+'%' : ''}</td><td>${t['Overall Completion %'] != null ? parseFloat(t['Overall Completion %']).toFixed(1)+'%' : ''}</td><td>${t.Remarks || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.tasks && rp.tasks.length) {
+            h += '<div class="section"><h3>Work Progress</h3><table><tr><th>Block</th><th>Task</th><th>Unit</th><th>Planned</th><th>Executed</th><th>Daily %</th><th>Cumulative %</th><th>Remarks</th></tr>';
+            for (var i = 0; i < rp.tasks.length; i++) {
+              var t = rp.tasks[i];
+              var dailyPct = (t['Daily Completion %'] != null) ? parseFloat(t['Daily Completion %']).toFixed(1) + '%' : '';
+              var cumPct = (t['Overall Completion %'] != null) ? parseFloat(t['Overall Completion %']).toFixed(1) + '%' : '';
+              h += '<tr><td>' + (t.Block || '') + '</td><td>' + (t['Task Name'] || '') + '</td><td>' + (t.Unit || '') + '</td>';
+              h += '<td>' + (t['Planned QTY'] || '') + '</td><td>' + (t['Executed QTY'] || '') + '</td>';
+              h += '<td>' + dailyPct + '</td><td>' + cumPct + '</td><td>' + (t.Remarks || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Workforce
-        if (rp.workforce?.length) {
-          h += '<div class="section"><h3>Workforce</h3><table><tr><th>Type</th><th>Planned</th><th>Available</th><th>Comments</th></tr>';
-          rp.workforce.forEach(w => h += `<tr><td>${w['Labor Type']}</td><td>${w.Planned}</td><td>${w.Available}</td><td>${w.Comments || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.workforce && rp.workforce.length) {
+            h += '<div class="section"><h3>Workforce</h3><table><tr><th>Type</th><th>Planned</th><th>Available</th><th>Comments</th></tr>';
+            for (var i = 0; i < rp.workforce.length; i++) {
+              var w = rp.workforce[i];
+              h += '<tr><td>' + (w['Labor Type'] || '') + '</td><td>' + (w.Planned || '') + '</td><td>' + (w.Available || '') + '</td><td>' + (w.Comments || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Equipment
-        if (rp.equipment?.length) {
-          h += '<div class="section"><h3>Equipment</h3><table><tr><th>Type</th><th>Qty</th><th>Condition</th><th>Comments</th></tr>';
-          rp.equipment.forEach(e => h += `<tr><td>${e['Equipment Type']}</td><td>${e.Quantity}</td><td>${e['Working Condition']}</td><td>${e.Comments || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.equipment && rp.equipment.length) {
+            h += '<div class="section"><h3>Equipment</h3><table><tr><th>Type</th><th>Qty</th><th>Condition</th><th>Comments</th></tr>';
+            for (var i = 0; i < rp.equipment.length; i++) {
+              var e = rp.equipment[i];
+              h += '<tr><td>' + (e['Equipment Type'] || '') + '</td><td>' + (e.Quantity || '') + '</td><td>' + (e['Working Condition'] || '') + '</td><td>' + (e.Comments || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Materials
-        const showMat = (title, items) => {
-          if (!items?.length) return '';
-          let s = `<div class="section"><h3>${title}</h3><table><tr><th>Description</th><th>Unit</th><th>Qty</th><th>Block</th></tr>`;
-          items.forEach(m => s += `<tr><td>${m.Description}</td><td>${m.Unit}</td><td>${m.Quantity}</td><td>${m['Allocated Block'] || ''}</td></tr>`);
-          return s + '</table></div>';
-        };
-        h += showMat('Materials Delivered', rp.materialsDelivered);
-        h += showMat('Materials On Site', rp.materialsOnSite);
+          function showMat(title, items) {
+            if (!items || !items.length) return '';
+            var s = '<div class="section"><h3>' + title + '</h3><table><tr><th>Description</th><th>Unit</th><th>Qty</th><th>Block</th></tr>';
+            for (var i = 0; i < items.length; i++) {
+              var m = items[i];
+              s += '<tr><td>' + (m.Description || '') + '</td><td>' + (m.Unit || '') + '</td><td>' + (m.Quantity || '') + '</td><td>' + (m['Allocated Block'] || '') + '</td></tr>';
+            }
+            return s + '</table></div>';
+          }
+          h += showMat('Materials Delivered', rp.materialsDelivered);
+          h += showMat('Materials On Site', rp.materialsOnSite);
 
-        // Issues
-        if (rp.issues?.length) {
-          h += '<div class="section"><h3>Issues &amp; Delays</h3><table><tr><th>Block</th><th>Details</th></tr>';
-          rp.issues.forEach(i => h += `<tr><td>${i.Block || ''}</td><td>${i['Issue Details']}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.issues && rp.issues.length) {
+            h += '<div class="section"><h3>Issues and Delays</h3><table><tr><th>Block</th><th>Details</th></tr>';
+            for (var i = 0; i < rp.issues.length; i++) {
+              h += '<tr><td>' + (rp.issues[i].Block || '') + '</td><td>' + (rp.issues[i]['Issue Details'] || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Tests
-        if (rp.tests?.length) {
-          h += '<div class="section"><h3>Tests Conducted</h3><table><tr><th>Test</th><th>Block</th><th>Result</th></tr>';
-          rp.tests.forEach(t => h += `<tr><td>${t.Test}</td><td>${t.Block || ''}</td><td>${t.Result || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.tests && rp.tests.length) {
+            h += '<div class="section"><h3>Tests Conducted</h3><table><tr><th>Test</th><th>Block</th><th>Result</th></tr>';
+            for (var i = 0; i < rp.tests.length; i++) {
+              h += '<tr><td>' + (rp.tests[i].Test || '') + '</td><td>' + (rp.tests[i].Block || '') + '</td><td>' + (rp.tests[i].Result || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Correspondences
-        if (rp.correspondences?.length) {
-          h += '<div class="section"><h3>Correspondences</h3><table><tr><th>Date</th><th>From</th><th>To</th><th>Subject</th></tr>';
-          rp.correspondences.forEach(c => h += `<tr><td>${c.Date}</td><td>${c.From}</td><td>${c.To}</td><td>${c.Subject}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.correspondences && rp.correspondences.length) {
+            h += '<div class="section"><h3>Correspondences</h3><table><tr><th>Date</th><th>From</th><th>To</th><th>Subject</th></tr>';
+            for (var i = 0; i < rp.correspondences.length; i++) {
+              var c = rp.correspondences[i];
+              h += '<tr><td>' + (c.Date || '') + '</td><td>' + (c.From || '') + '</td><td>' + (c.To || '') + '</td><td>' + (c.Subject || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Safety
-        if (rp.safetyIssues?.length) {
-          h += '<div class="section"><h3>Safety Issues</h3><table><tr><th>Issue</th><th>Block</th><th>Action Taken</th></tr>';
-          rp.safetyIssues.forEach(s => h += `<tr><td>${s.Issue}</td><td>${s.Block || ''}</td><td>${s['Action Taken'] || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.safetyIssues && rp.safetyIssues.length) {
+            h += '<div class="section"><h3>Safety Issues</h3><table><tr><th>Issue</th><th>Block</th><th>Action Taken</th></tr>';
+            for (var i = 0; i < rp.safetyIssues.length; i++) {
+              h += '<tr><td>' + (rp.safetyIssues[i].Issue || '') + '</td><td>' + (rp.safetyIssues[i].Block || '') + '</td><td>' + (rp.safetyIssues[i]['Action Taken'] || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Stakeholder
-        if (rp.stakeholderContribution?.length) {
-          h += '<div class="section"><h3>Stakeholder Contribution</h3><table><tr><th>Stakeholder</th><th>Contribution</th></tr>';
-          rp.stakeholderContribution.forEach(s => h += `<tr><td>${s.Stakeholder}</td><td>${s.Contribution}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.stakeholderContribution && rp.stakeholderContribution.length) {
+            h += '<div class="section"><h3>Stakeholder Contribution</h3><table><tr><th>Stakeholder</th><th>Contribution</th></tr>';
+            for (var i = 0; i < rp.stakeholderContribution.length; i++) {
+              h += '<tr><td>' + (rp.stakeholderContribution[i].Stakeholder || '') + '</td><td>' + (rp.stakeholderContribution[i].Contribution || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Performance
-        if (rp.performance?.length) {
-          h += '<div class="section"><h3>Performance Analysis</h3><p><strong>Efficiency:</strong> ${rp.efficiency || 'N/A'}</p>';
-          h += '<table><tr><th>Block</th><th>Target Achievement</th><th>Status</th></tr>';
-          rp.performance.forEach(p => h += `<tr><td>${p.Block}</td><td>${p['Daily Target Achievement'] || ''}</td><td>${p.Status}</td></tr>`);
-          h += '</table>';
-          if (rp.recommendations) h += `<p><strong>Recommendations:</strong></p><pre style="white-space:pre-wrap;font-size:0.85rem">${rp.recommendations}</pre>`;
-          h += '</div>';
-        }
+          if (rp.performance && rp.performance.length) {
+            h += '<div class="section"><h3>Performance Analysis</h3><p><strong>Efficiency:</strong> ' + (rp.efficiency || 'N/A') + '</p>';
+            h += '<table><tr><th>Block</th><th>Target Achievement</th><th>Status</th></tr>';
+            for (var i = 0; i < rp.performance.length; i++) {
+              h += '<tr><td>' + (rp.performance[i].Block || '') + '</td><td>' + (rp.performance[i]['Daily Target Achievement'] || '') + '</td><td>' + (rp.performance[i].Status || '') + '</td></tr>';
+            }
+            h += '</table>';
+            if (rp.recommendations) {
+              h += '<p><strong>Recommendations:</strong></p><pre style="white-space:pre-wrap;font-size:0.85rem">' + rp.recommendations + '</pre>';
+            }
+            h += '</div>';
+          }
 
-        // Site Orders
-        if (rp.siteOrders?.length) {
-          h += '<div class="section"><h3>Site Orders</h3><table><tr><th>Order No.</th><th>Issued To</th><th>Instruction</th><th>Deadline</th></tr>';
-          rp.siteOrders.forEach(o => h += `<tr><td>${o['Order No']}</td><td>${o['Issued To']}</td><td>${o.Instruction}</td><td>${o.Deadline || ''}</td></tr>`);
-          h += '</table></div>';
-        }
+          if (rp.siteOrders && rp.siteOrders.length) {
+            h += '<div class="section"><h3>Site Orders</h3><table><tr><th>Order No.</th><th>Issued To</th><th>Instruction</th><th>Deadline</th></tr>';
+            for (var i = 0; i < rp.siteOrders.length; i++) {
+              var o = rp.siteOrders[i];
+              h += '<tr><td>' + (o['Order No'] || '') + '</td><td>' + (o['Issued To'] || '') + '</td><td>' + (o.Instruction || '') + '</td><td>' + (o.Deadline || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
 
-        // Hold Points
-        if (rp.holdPointRequests) h += `<div class="section"><h3>Hold-Point Requests</h3><p>${rp.holdPointRequests}</p></div>`;
+          if (rp.holdPointRequests) {
+            h += '<div class="section"><h3>Hold-Point Requests</h3><p>' + rp.holdPointRequests + '</p></div>';
+          }
 
-        // Photos
-        if (rp.photos?.length) {
-          h += '<div class="section"><h3>Photos</h3><div class="photo-grid">';
-          rp.photos.forEach(p => { if (p.url) h += `<img src="${p.url}" alt="${p.block || 'photo'}" title="${p.caption || ''}">`; });
-          h += '</div></div>';
-        }
+          if (rp.photos && rp.photos.length) {
+            h += '<div class="section"><h3>Photos</h3><div class="photo-grid">';
+            for (var i = 0; i < rp.photos.length; i++) {
+              if (rp.photos[i].url) {
+                h += '<img src="' + rp.photos[i].url + '" alt="' + (rp.photos[i].block || 'photo') + '" title="' + (rp.photos[i].caption || '') + '">';
+              }
+            }
+            h += '</div></div>';
+          }
 
-        document.getElementById('modalContent').innerHTML = h;
-        document.getElementById('reportModal').classList.remove('hidden');
-        document.getElementById('rejectReason').value = '';
-      } catch (e) { alert('Network error loading report.'); }
+          document.getElementById('modalContent').innerHTML = h;
+          document.getElementById('reportModal').classList.remove('hidden');
+          document.getElementById('rejectReason').value = '';
+        })
+        .catch(function() { alert('Network error loading report.'); });
     }
 
-    function closeModal() { document.getElementById('reportModal').classList.add('hidden'); currentReportId = null; }
+    function closeModal() {
+      document.getElementById('reportModal').classList.add('hidden');
+      currentReportId = null;
+    }
 
-    async function approveReport(id, isReject) {
-      const reason = isReject ? document.getElementById('rejectReason').value.trim() : '';
-      const email = isReject ? `${loggedUser} [REJECTED]${reason ? ' - ' + reason : ''}` : loggedUser;
-      await fetch(API_BASE, { method: 'POST', body: JSON.stringify({ action: 'approveReport', reportId: id || currentReportId, directorEmail: email }) });
-      closeModal(); loadReports();
+    function approveReport(id, isReject) {
+      var reason = isReject ? document.getElementById('rejectReason').value.trim() : '';
+      var email = isReject ? (loggedUser + ' [REJECTED]' + (reason ? ' - ' + reason : '')) : loggedUser;
+      fetch(API_BASE, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'approveReport', reportId: id || currentReportId, directorEmail: email })
+      }).finally(function() {
+        closeModal();
+        loadReports();
+      });
     }
 
     function quickApprove(id) { approveReport(id, false); }
-    document.getElementById('modalApproveBtn').addEventListener('click', () => approveReport(null, false));
-    document.getElementById('modalRejectBtn').addEventListener('click', () => approveReport(null, true));
   </script>
 </body>
 </html>
