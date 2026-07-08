@@ -1,50 +1,424 @@
+<!-- Version 4.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Director Dashboard - HDCRS V4</title>
+  <title>Director Portal - HDCRS V4</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root { --primary: #00695C; --primary-dark: #004D40; --bg: #F5E4D0; --card: white; --text: #3E2723; --border: #D7CCC8; --danger: #C44536; --warn: #E65100; --success: #2E7D32; }
+    :root {
+      --primary: #00695C;
+      --primary-dark: #004D40;
+      --bg: #F5E4D0;
+      --card: #ffffff;
+      --text: #3E2723;
+      --border: #D7CCC8;
+      --danger: #C44536;
+      --warn: #E65100;
+      --success: #2E7D32;
+    }
     * { box-sizing: border-box; }
-    body { background: var(--bg); font-family: system-ui, sans-serif; margin: 0; padding: 1rem; color: var(--text); }
-    .login-box, .container { max-width: 1300px; width: 100%; margin: 0 auto; background: var(--card); border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-    .login-box { max-width: 400px; text-align: center; margin-top: 3rem; }
-    .login-box h2, .container h1 { color: var(--primary); margin: 0 0 1rem; }
-    .login-box input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; border: 1px solid var(--border); border-radius: 8px; }
-    .btn { padding: 0.4rem 1rem; border: none; border-radius: 16px; cursor: pointer; font-weight: 600; margin: 0.15rem; font-size: 0.85rem; }
+    body {
+      background: var(--bg);
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      color: var(--text);
+    }
+
+    /* Login */
+    .login-box {
+      max-width: 400px;
+      width: 100%;
+      margin: 3rem auto 0;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .login-box h2 {
+      color: var(--primary);
+      margin: 0.5rem 0 1rem;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.4rem 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .login-logo {
+      max-width: 140px;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    /* Header */
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .dashboard-header img { height: 36px; }
+    .dashboard-header h1 {
+      color: var(--primary);
+      margin: 0;
+      font-size: 1.3rem;
+    }
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .user-bar a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .user-bar a:hover { text-decoration: underline; }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      margin: 1rem 0 0;
+      border-bottom: 2px solid var(--border);
+    }
+    .tab-btn {
+      padding: 0.6rem 1.5rem;
+      border: none;
+      background: transparent;
+      color: #888;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--primary-dark); }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.4rem 1rem;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 0.15rem;
+      font-size: 0.85rem;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .approve { background: var(--primary); color: white; }
     .reject { background: var(--danger); color: white; }
     .view { background: #5D4037; color: white; }
-    .btn:hover { opacity: 0.85; }
+
+    /* Hidden */
     .hidden { display: none !important; }
-    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
-    th { background: #f3e7da; color: var(--text); padding: 0.5rem; text-align: left; border-bottom: 2px solid var(--primary); font-weight: 600; }
-    td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
-    .badge { padding: 0.15rem 0.6rem; border-radius: 10px; font-weight: 600; font-size: 0.8rem; display: inline-block; }
+
+    /* Error */
+    .error {
+      color: var(--danger);
+      margin-top: 0.5rem;
+      min-height: 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+    }
+    th {
+      background: #f3e7da;
+      color: var(--text);
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 2px solid var(--primary);
+      font-weight: 600;
+    }
+    td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Badge */
+    .badge {
+      padding: 0.15rem 0.6rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
     .Pending { background: #FFF3E0; color: #E65100; }
     .Approved { background: #E0F2F1; color: var(--primary); }
     .Rejected { background: #FFEBEE; color: var(--danger); }
-    .error { color: var(--danger); margin-top: 0.5rem; min-height: 1.2rem; font-size: 0.9rem; }
-    .login-logo { max-width: 140px; margin-bottom: 0.5rem; }
-    .dashboard-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .dashboard-header img { height: 36px; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; border-radius: 16px; padding: 1.5rem; max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
-    .modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #999; }
-    .modal-actions { text-align: center; margin-top: 1rem; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 900px;
+      width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-close {
+      float: right;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: #999;
+    }
+    .modal-actions {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .reject-reason {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      font-family: inherit;
+    }
+
+    /* Report Detail Sections */
     .section { margin: 1.2rem 0 0.5rem; }
-    .section h3 { color: var(--primary); margin: 0 0 0.3rem; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.2rem; }
+    .section h3 {
+      color: var(--primary);
+      margin: 0 0 0.3rem;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.2rem;
+    }
     .section table { font-size: 0.82rem; }
-    .meta-grid { display: grid; grid-template-columns: 160px 1fr; gap: 0.2rem 10px; font-size: 0.9rem; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 0.2rem 10px;
+      font-size: 0.9rem;
+    }
     .meta-grid .label { font-weight: 600; color: #555; }
-    .reject-reason { width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px; margin: 0.5rem 0; font-family: inherit; }
-    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .photo-grid img { max-width: 130px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); }
+    .photo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .photo-grid img {
+      max-width: 130px;
+      max-height: 100px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* ===== DASHBOARD ANALYTICS ===== */
+    .dashboard-loading {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #888;
+      font-size: 1rem;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    .kpi-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 1.2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .kpi-card .kpi-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.1;
+      margin: 0.3rem 0;
+    }
+    .kpi-card .kpi-label {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-card.kpi-pending .kpi-value { color: var(--warn); }
+    .kpi-card.kpi-approved .kpi-value { color: var(--success); }
+    .kpi-card.kpi-eff-high .kpi-value { color: var(--success); }
+    .kpi-card.kpi-eff-mid .kpi-value { color: var(--warn); }
+    .kpi-card.kpi-eff-low .kpi-value { color: var(--danger); }
+
+    /* Reporting Rate Bar */
+    .rate-bar-outer {
+      width: 80%;
+      height: 10px;
+      background: #E0E0E0;
+      border-radius: 5px;
+      margin: 0.5rem auto 0;
+      overflow: hidden;
+    }
+    .rate-bar-inner {
+      height: 100%;
+      border-radius: 5px;
+      background: var(--primary);
+      transition: width 0.6s ease;
+    }
+
+    /* Charts Grid */
+    .charts-row {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    .charts-row.row-1 {
+      grid-template-columns: 3fr 2fr;
+    }
+    .charts-row.row-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .chart-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    .chart-card h3 {
+      margin: 0 0 0.5rem;
+      color: var(--primary);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    /* Weekly Summary Table inside Chart Card */
+    .weekly-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .weekly-table th {
+      background: #f3e7da;
+      color: var(--text);
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 2px solid var(--primary);
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+    .weekly-table td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    /* Issues Section */
+    .issues-section {
+      margin-bottom: 1rem;
+    }
+    .issues-section h3 {
+      color: var(--primary);
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .issues-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.8rem;
+    }
+    .issue-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--warn);
+      border-radius: 12px;
+      padding: 0.8rem 1rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    .issue-card .issue-block {
+      font-weight: 700;
+      color: var(--primary-dark);
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+    }
+    .issue-card .issue-details {
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .no-issues {
+      text-align: center;
+      padding: 1.5rem;
+      color: #999;
+      font-style: italic;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-row.row-1,
+      .charts-row.row-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      body { padding: 0.5rem; }
+      .container { padding: 1rem; border-radius: 12px; }
+      .login-box { padding: 1.5rem 1rem; border-radius: 12px; margin-top: 1.5rem; }
+      .tab-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="login-box">
     <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo" class="login-logo">
     <h2>Director Login</h2>
@@ -54,17 +428,40 @@
     <div class="error" id="loginError"></div>
   </div>
 
+  <!-- MAIN DASHBOARD CONTAINER -->
   <div id="dashboard" class="container hidden">
     <div class="dashboard-header">
       <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo">
-      <h1 style="margin:0">Director Dashboard - Daily Reports</h1>
+      <h1>Director Portal - HDCRS V4</h1>
     </div>
-    <p>Logged in as <span id="loggedUser"></span> | <a href="#" id="logoutLink">Logout</a>
-       &nbsp;&nbsp;<button class="btn view" id="refreshBtn">Refresh</button></p>
-    <div id="reportsTable">Loading...</div>
-    <div id="message" class="error"></div>
+    <div class="user-bar">
+      <span>Logged in as <strong id="loggedUser"></strong></span>
+      <span>|</span>
+      <a href="#" id="logoutLink">Logout</a>
+      <button class="btn view" id="refreshBtn">Refresh</button>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabReports" data-tab="reports">Reports</button>
+      <button class="tab-btn" id="tabAnalytics" data-tab="analytics">Analytics Dashboard</button>
+    </div>
+
+    <!-- TAB 1: REPORTS -->
+    <div id="reportsTab" style="margin-top:1rem">
+      <div id="reportsTable">Loading...</div>
+      <div id="message" class="error"></div>
+    </div>
+
+    <!-- TAB 2: ANALYTICS DASHBOARD -->
+    <div id="analyticsTab" class="hidden" style="margin-top:1rem">
+      <div id="analyticsContent">
+        <div class="dashboard-loading">Loading dashboard data...</div>
+      </div>
+    </div>
   </div>
 
+  <!-- REPORT VIEW MODAL -->
   <div id="reportModal" class="modal-overlay hidden">
     <div class="modal-content">
       <button class="modal-close" id="modalCloseBtn">X</button>
@@ -78,10 +475,13 @@
   </div>
 
   <script>
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbw9ZWvh8X6vXRv0RA6MpYqE3OqLqNGNX9_w2pZP4G0ZthdweZ6M2gKYzyfqvgNhHL5s/exec';
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
+    var dashboardDataCache = null;
+    var chartInstances = {};
 
+    // Event Listeners
     document.getElementById('loginBtn').addEventListener('click', attemptLogin);
     document.getElementById('logoutLink').addEventListener('click', function(e) { e.preventDefault(); logout(); });
     document.getElementById('refreshBtn').addEventListener('click', loadReports);
@@ -89,8 +489,35 @@
     document.getElementById('modalApproveBtn').addEventListener('click', function() { approveReport(null, false); });
     document.getElementById('modalRejectBtn').addEventListener('click', function() { approveReport(null, true); });
 
+    // Tab switching
+    document.getElementById('tabReports').addEventListener('click', function() { switchTab('reports'); });
+    document.getElementById('tabAnalytics').addEventListener('click', function() { switchTab('analytics'); });
+
+    // Auto-login check
     if (loggedUser) { showDashboard(loggedUser); }
 
+    // ===== TAB SWITCHING =====
+    function switchTab(tabName) {
+      var tabReports = document.getElementById('tabReports');
+      var tabAnalytics = document.getElementById('tabAnalytics');
+      var reportsTab = document.getElementById('reportsTab');
+      var analyticsTab = document.getElementById('analyticsTab');
+
+      if (tabName === 'reports') {
+        tabReports.classList.add('active');
+        tabAnalytics.classList.remove('active');
+        reportsTab.classList.remove('hidden');
+        analyticsTab.classList.add('hidden');
+      } else {
+        tabAnalytics.classList.add('active');
+        tabReports.classList.remove('active');
+        analyticsTab.classList.remove('hidden');
+        reportsTab.classList.add('hidden');
+        loadAnalyticsDashboard();
+      }
+    }
+
+    // ===== LOGIN =====
     function attemptLogin() {
       var name = document.getElementById('loginName').value.trim();
       var pw = document.getElementById('loginPassword').value.trim();
@@ -151,6 +578,7 @@
       location.reload();
     }
 
+    // ===== REPORTS TAB =====
     function loadReports() {
       fetch(API_BASE + '?endpoint=reports')
         .then(function(r) { return r.json(); })
@@ -355,6 +783,286 @@
     }
 
     function quickApprove(id) { approveReport(id, false); }
+
+    // ===== ANALYTICS DASHBOARD =====
+    function destroyAllCharts() {
+      var keys = Object.keys(chartInstances);
+      for (var i = 0; i < keys.length; i++) {
+        if (chartInstances[keys[i]]) {
+          chartInstances[keys[i]].destroy();
+          chartInstances[keys[i]] = null;
+        }
+      }
+      chartInstances = {};
+    }
+
+    function loadAnalyticsDashboard() {
+      if (dashboardDataCache) {
+        renderDashboard(dashboardDataCache);
+        return;
+      }
+      var container = document.getElementById('analyticsContent');
+      container.innerHTML = '<div class="dashboard-loading">Loading dashboard data...</div>';
+
+      fetch(API_BASE + '?endpoint=dashboard')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          dashboardDataCache = data;
+          renderDashboard(data);
+        })
+        .catch(function(err) {
+          console.error('Dashboard fetch error:', err);
+          container.innerHTML = '<div class="dashboard-loading" style="color:#C44536">Failed to load dashboard data. Please try again later.</div>';
+        });
+    }
+
+    function renderDashboard(data) {
+      destroyAllCharts();
+      var kpis = data.kpis || {};
+      var submissionTrend = data.submissionTrend || [];
+      var workforceTrend = data.workforceTrend || [];
+      var blockStatusSummary = data.blockStatusSummary || {};
+      var topIssues = data.topIssues || [];
+      var weeklySummary = data.weeklySummary || [];
+
+      // Parse efficiency value for color coding
+      var effStr = String(kpis.avgEfficiency || '0%');
+      var effNum = parseInt(effStr.replace('%', ''), 10) || 0;
+      var effClass = 'kpi-eff-low';
+      if (effNum > 80) { effClass = 'kpi-eff-high'; }
+      else if (effNum >= 50) { effClass = 'kpi-eff-mid'; }
+
+      // Reporting rate bar color
+      var rateVal = parseInt(kpis.reportingRate, 10) || 0;
+      var rateColor = '#00695C';
+      if (rateVal < 30) { rateColor = '#C44536'; }
+      else if (rateVal < 60) { rateColor = '#E65100'; }
+
+      var html = '';
+
+      // === KPI CARDS ===
+      html += '<div class="kpi-grid">';
+      html += '<div class="kpi-card"><div class="kpi-label">Total Reports</div><div class="kpi-value">' + (kpis.totalReports || 0) + '</div></div>';
+      html += '<div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">' + (kpis.pending || 0) + '</div></div>';
+      html += '<div class="kpi-card kpi-approved"><div class="kpi-label">Approved</div><div class="kpi-value">' + (kpis.approved || 0) + '</div></div>';
+      html += '<div class="kpi-card ' + effClass + '"><div class="kpi-label">Avg Efficiency</div><div class="kpi-value">' + effStr + '</div></div>';
+      html += '<div class="kpi-card"><div class="kpi-label">Active Sites</div><div class="kpi-value">' + (kpis.activeSites || 0) + '</div></div>';
+      html += '<div class="kpi-card"><div class="kpi-label">Reporting Rate (30d)</div><div class="kpi-value">' + (kpis.reportingRate || 0) + '%</div>';
+      html += '<div class="rate-bar-outer"><div class="rate-bar-inner" style="width:' + Math.min(rateVal, 100) + '%;background:' + rateColor + '"></div></div></div>';
+      html += '</div>';
+
+      // === CHARTS ROW 1: Submission Trend + Block Status ===
+      html += '<div class="charts-row row-1">';
+      html += '<div class="chart-card"><h3>Submission Trend (Last 30 Days)</h3><div class="chart-container"><canvas id="chartSubmission"></canvas></div></div>';
+      html += '<div class="chart-card"><h3>Block Status Distribution</h3><div class="chart-container"><canvas id="chartBlockStatus"></canvas></div></div>';
+      html += '</div>';
+
+      // === CHARTS ROW 2: Workforce Trend + Weekly Summary ===
+      html += '<div class="charts-row row-2">';
+      html += '<div class="chart-card"><h3>Workforce Trend (Last 7 Days)</h3><div class="chart-container"><canvas id="chartWorkforce"></canvas></div></div>';
+      html += '<div class="chart-card"><h3>Weekly Summary</h3>';
+      html += '<div style="overflow-x:auto">';
+      html += '<table class="weekly-table"><tr><th>Week Starting</th><th>Reports</th><th>Sites Covered</th></tr>';
+      if (weeklySummary.length === 0) {
+        html += '<tr><td colspan="3" style="text-align:center;color:#999">No data available</td></tr>';
+      } else {
+        for (var w = 0; w < weeklySummary.length; w++) {
+          var ws = weeklySummary[w];
+          html += '<tr><td>' + (ws.weekStart || '') + '</td><td>' + (ws.reports || 0) + '</td><td>' + (ws.sitesCovered || 0) + '</td></tr>';
+        }
+      }
+      html += '</table></div></div>';
+      html += '</div>';
+
+      // === RECENT ISSUES ===
+      html += '<div class="issues-section"><h3>Recent Issues</h3>';
+      if (topIssues.length === 0) {
+        html += '<div class="no-issues">No issues reported</div>';
+      } else {
+        html += '<div class="issues-grid">';
+        for (var i = 0; i < topIssues.length; i++) {
+          var issue = topIssues[i];
+          html += '<div class="issue-card">';
+          html += '<div class="issue-block">' + (issue.block || 'N/A') + '</div>';
+          html += '<div class="issue-details">' + (issue.details || 'No details') + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      document.getElementById('analyticsContent').innerHTML = html;
+
+      // === RENDER CHARTS ===
+      renderSubmissionChart(submissionTrend);
+      renderBlockStatusChart(blockStatusSummary);
+      renderWorkforceChart(workforceTrend);
+    }
+
+    function renderSubmissionChart(trend) {
+      var labels = [];
+      var values = [];
+      for (var i = 0; i < trend.length; i++) {
+        labels.push(trend[i].date || '');
+        values.push(trend[i].count || 0);
+      }
+      var ctx = document.getElementById('chartSubmission');
+      if (!ctx) return;
+      chartInstances.submission = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Reports',
+            data: values,
+            borderColor: '#00695C',
+            backgroundColor: 'rgba(0,105,92,0.1)',
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: '#00695C',
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#3E2723',
+              titleFont: { family: 'system-ui' },
+              bodyFont: { family: 'system-ui' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { maxRotation: 45, font: { size: 10 } }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, font: { size: 11 } },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderBlockStatusChart(summary) {
+      var labels = [];
+      var values = [];
+      var keys = Object.keys(summary);
+      var colors = ['#00695C', '#E65100', '#80CBC4', '#C44536', '#FFB74D', '#A5D6A7'];
+      for (var i = 0; i < keys.length; i++) {
+        labels.push(keys[i]);
+        values.push(summary[keys[i]] || 0);
+      }
+      var ctx = document.getElementById('chartBlockStatus');
+      if (!ctx) return;
+      chartInstances.blockStatus = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: colors.slice(0, labels.length),
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 16,
+                usePointStyle: true,
+                pointStyleWidth: 10,
+                font: { size: 12, family: 'system-ui' }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#3E2723',
+              titleFont: { family: 'system-ui' },
+              bodyFont: { family: 'system-ui' }
+            }
+          },
+          cutout: '60%'
+        }
+      });
+    }
+
+    function renderWorkforceChart(trend) {
+      var labels = [];
+      var planned = [];
+      var available = [];
+      for (var i = 0; i < trend.length; i++) {
+        labels.push(trend[i].date || '');
+        planned.push(trend[i].planned || 0);
+        available.push(trend[i].available || 0);
+      }
+      var ctx = document.getElementById('chartWorkforce');
+      if (!ctx) return;
+      chartInstances.workforce = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Planned',
+              data: planned,
+              backgroundColor: '#00695C',
+              borderRadius: 4,
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
+            },
+            {
+              label: 'Available',
+              data: available,
+              backgroundColor: '#80CBC4',
+              borderRadius: 4,
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                pointStyleWidth: 10,
+                font: { size: 12, family: 'system-ui' }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#3E2723',
+              titleFont: { family: 'system-ui' },
+              bodyFont: { family: 'system-ui' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 } }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 5, font: { size: 11 } },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+          }
+        }
+      });
+    }
   </script>
 </body>
 </html>
