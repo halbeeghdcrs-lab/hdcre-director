@@ -475,7 +475,7 @@
   </div>
 
   <script>
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec';
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbz11Ck85u2lDwj8F-gAGaf4bW6q5o-1ZDmZWm8qE4_9v-tGF8StT6nV7gAuAafzcing/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
     var dashboardDataCache = null;
@@ -640,11 +640,16 @@
 
     function viewReport(reportId) {
       currentReportId = reportId;
+      console.log('[Director] Viewing report: ' + reportId);
       fetch(API_BASE + '?endpoint=reportDetail&reportId=' + reportId)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (!data.success) { alert('Could not load report.'); return; }
+          console.log('[Director] ReportDetail response:', JSON.stringify(data).substring(0, 1000));
+          if (!data.success) { alert('Could not load report: ' + (data.message || '')); return; }
           var rp = data.report;
+          console.log('[Director] tasks count:', (rp.tasks ? rp.tasks.length : 'null'));
+          console.log('[Director] workforce count:', (rp.workforce ? rp.workforce.length : 'null'));
+          if (rp.tasks && rp.tasks.length > 0) console.log('[Director] first task:', JSON.stringify(rp.tasks[0]));
           var h = '<h2 style="color:var(--primary);margin-top:0">' + rp.site + ' - ' + rp.date + '</h2>';
           h += '<div class="meta-grid"><span class="label">RE:</span><span>' + rp.reName + '</span>';
           h += '<span class="label">Weather:</span><span>' + (rp.weatherAM || '') + ' / ' + (rp.weatherPM || '') + '</span>';
