@@ -475,7 +475,7 @@
   </div>
 
   <script>
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbzEFyqfMXwlwwIClxMFydYXkl9akuMnptYjAOLIQJev_Zk1N6CWQN14kCzCASJDoijQ/exec';
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbx14uKC7ZyT991b3jltKDa_a33_cIKFADBzZYeCXsAszlPbsS8-gA2-5hAXTlzJodUl/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
     var dashboardDataCache = null;
@@ -580,27 +580,48 @@
 
     // ===== REPORTS TAB =====
     function loadReports() {
+      var table = document.getElementById('reportsTable');
+      table.innerHTML = '<p style="color:var(--primary)">Loading reports...</p>';
+
       fetch(API_BASE + '?endpoint=reports')
-        .then(function(r) { return r.json(); })
-        .then(function(reports) {
+        .then(function(r) {
+          console.log('[Director] Reports fetch status: ' + r.status);
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function(data) {
+          console.log('[Director] Reports response type: ' + typeof data);
+          console.log('[Director] Reports data:', JSON.stringify(data).substring(0, 500));
+
+          // Handle both bare array and wrapped object
+          var reports = Array.isArray(data) ? data : (data.reports || []);
+
           var html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
           if (reports.length === 0) {
-            html += '<tr><td colspan="8">No reports.</td></tr>';
+            html += '<tr><td colspan="8">No reports found.</td></tr>';
           } else {
             for (var i = 0; i < reports.length; i++) {
               var r = reports[i];
-              html += '<tr><td style="font-size:0.75rem">' + r.id + '</td><td>' + r.site + '</td><td>' + r.date + '</td><td>' + r.reName + '</td>';
-              html += '<td>' + (r.weather || '') + '</td><td>' + (r.efficiency || '-') + '</td>';
-              html += '<td><span class="badge ' + r.status + '">' + r.status + '</span></td>';
-              html += '<td><button class="btn view" data-id="' + r.id + '">View</button>';
-              if (r.status === 'Pending') {
-                html += ' <button class="btn approve" data-id="' + r.id + '">Approve</button>';
+              var displayDate = r.date || '';
+              // Convert ISO date string to readable format
+              if (displayDate && displayDate.indexOf('T') > -1) {
+                var d = new Date(displayDate);
+                displayDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+              }
+              html += '<tr><td style="font-size:0.75rem">' + (r.id || r['Report ID'] || '-') + '</td><td>' + (r.site || r.Site || '-') + '</td><td>' + displayDate + '</td><td>' + (r.reName || r['Resident Engineer'] || '-') + '</td>';
+              html += '<td>' + (r.weather || '-') + '</td><td>' + (r.efficiency || '-') + '</td>';
+              var st = r.status || r['Approval Status'] || '-';
+              html += '<td><span class="badge ' + st + '">' + st + '</span></td>';
+              var rid = r.id || r['Report ID'] || '';
+              html += '<td><button class="btn view" data-id="' + rid + '">View</button>';
+              if (st === 'Pending') {
+                html += ' <button class="btn approve" data-id="' + rid + '">Approve</button>';
               }
               html += '</td></tr>';
             }
           }
           html += '</table>';
-          document.getElementById('reportsTable').innerHTML = html;
+          table.innerHTML = html;
 
           var viewBtns = document.querySelectorAll('[data-id]');
           for (var j = 0; j < viewBtns.length; j++) {
@@ -611,8 +632,9 @@
             });
           }
         })
-        .catch(function() {
-          document.getElementById('reportsTable').innerHTML = '<p class="error">Failed to load reports.</p>';
+        .catch(function(err) {
+          console.error('[Director] Reports error:', err);
+          table.innerHTML = '<p class="error">Failed to load reports: ' + err.message + '</p>';
         });
     }
 
