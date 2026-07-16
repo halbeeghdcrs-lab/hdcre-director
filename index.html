@@ -475,7 +475,7 @@
   </div>
 
   <script>
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbz11Ck85u2lDwj8F-gAGaf4bW6q5o-1ZDmZWm8qE4_9v-tGF8StT6nV7gAuAafzcing/exec';
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbxKF7oU9rDiTi9oGeMZ6qvsxbI57sMb5GGICI9cmUUjxyXU1OmjmJHyIGCQ7nJlNQ1p/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
     var dashboardDataCache = null;
@@ -656,24 +656,24 @@
           h += '<span class="label">Efficiency:</span><span>' + (rp.efficiency || 'N/A') + '</span></div>';
           h += '<p><strong>Activity Summary:</strong> ' + (rp.activitySummary || '-') + '</p>';
 
-          if (rp.blockStatuses && rp.blockStatuses.length) {
-            h += '<div class="section"><h3>Block Status Overview</h3><table><tr><th>Block</th><th>Status</th><th>Target Achievement</th><th>Performance</th></tr>';
-            for (var i = 0; i < rp.blockStatuses.length; i++) {
-              var b = rp.blockStatuses[i];
-              h += '<tr><td>' + (b['Block Name'] || '') + '</td><td>' + (b['Block Status'] || '') + '</td><td>' + (b['Target Achievement'] || '') + '</td><td>' + (b['Performance Status'] || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
           if (rp.tasks && rp.tasks.length) {
-            h += '<div class="section"><h3>Work Progress</h3><table><tr><th>Block</th><th>Task</th><th>Unit</th><th>Planned</th><th>Executed</th><th>Daily %</th><th>Cumulative %</th><th>Remarks</th></tr>';
+            h += '<div class="section"><h3>2. Block-Wise Work Progress</h3><table><tr><th>Block</th><th>Task</th><th>Unit</th><th>Planned</th><th>Executed</th><th>Daily %</th><th>Cumulative</th><th>Overall %</th><th>Remarks</th></tr>';
             for (var i = 0; i < rp.tasks.length; i++) {
               var t = rp.tasks[i];
               var dailyPct = (t['Daily Completion %'] != null) ? parseFloat(t['Daily Completion %']).toFixed(1) + '%' : '';
               var cumPct = (t['Overall Completion %'] != null) ? parseFloat(t['Overall Completion %']).toFixed(1) + '%' : '';
               h += '<tr><td>' + (t.Block || '') + '</td><td>' + (t['Task Name'] || '') + '</td><td>' + (t.Unit || '') + '</td>';
               h += '<td>' + (t['Planned QTY'] || '') + '</td><td>' + (t['Executed QTY'] || '') + '</td>';
-              h += '<td>' + dailyPct + '</td><td>' + cumPct + '</td><td>' + (t.Remarks || '') + '</td></tr>';
+              h += '<td>' + dailyPct + '</td><td>' + (t['Cumulative Executed QTY'] || '') + '</td><td>' + cumPct + '</td><td>' + (t.Remarks || '') + '</td></tr>';
+            }
+            h += '</table></div>';
+          }
+
+          if (rp.blockStatuses && rp.blockStatuses.length) {
+            h += '<div class="section"><h3>3. Block Status Overview (Auto-calculated)</h3><table><tr><th>Block</th><th>Status</th><th>Target Achievement</th><th>Performance</th></tr>';
+            for (var i = 0; i < rp.blockStatuses.length; i++) {
+              var b = rp.blockStatuses[i];
+              h += '<tr><td>' + (b['Block Name'] || '') + '</td><td>' + (b['Block Status'] || '') + '</td><td>' + (b['Target Achievement'] || '') + '</td><td>' + (b['Performance Status'] || '') + '</td></tr>';
             }
             h += '</table></div>';
           }
