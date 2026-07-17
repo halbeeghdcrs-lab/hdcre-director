@@ -289,6 +289,7 @@
     }
     .kpi-card.kpi-pending .kpi-value { color: var(--warn); }
     .kpi-card.kpi-approved .kpi-value { color: var(--success); }
+    .kpi-card.kpi-rejected .kpi-value { color: var(--danger); }
     .kpi-card.kpi-eff-high .kpi-value { color: var(--success); }
     .kpi-card.kpi-eff-mid .kpi-value { color: var(--warn); }
     .kpi-card.kpi-eff-low .kpi-value { color: var(--danger); }
@@ -319,6 +320,9 @@
       grid-template-columns: 3fr 2fr;
     }
     .charts-row.row-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .charts-row.row-3 {
       grid-template-columns: 1fr 1fr;
     }
     .chart-card {
@@ -401,11 +405,50 @@
       font-style: italic;
     }
 
+    /* Site Comparison Table */
+    .site-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .site-table th {
+      background: #f3e7da;
+      color: var(--text);
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 2px solid var(--primary);
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+    .site-table td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Revisions Log */
+    .revision-item {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .revision-item:last-child { border-bottom: none; }
+    .revision-meta {
+      color: #888;
+      font-size: 0.78rem;
+      margin-bottom: 0.2rem;
+    }
+    .revision-changes {
+      color: #555;
+      word-break: break-word;
+      font-size: 0.8rem;
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
       .charts-row.row-1,
-      .charts-row.row-2 { grid-template-columns: 1fr; }
+      .charts-row.row-2,
+      .charts-row.row-3 { grid-template-columns: 1fr; }
     }
     @media (max-width: 500px) {
       .kpi-grid { grid-template-columns: 1fr; }
@@ -475,7 +518,7 @@
   </div>
 
   <script>
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbxH3FRKSReHNrjUb_fIbnKsk6htgBhMwO6Mq3Al3cI_z710cMPc7XNGcw7Qb3IGKc0e/exec';
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbwaWiQGo17E3I4PAN-gNEvEBFRgw5TMpcfBifIIkPddqdvyPgD1iAlqsoU2VDAnfY1J/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
     var dashboardDataCache = null;
@@ -853,6 +896,9 @@
       var blockStatusSummary = data.blockStatusSummary || {};
       var topIssues = data.topIssues || [];
       var weeklySummary = data.weeklySummary || [];
+      var siteComparison = data.siteComparison || [];
+      var blockProgressChart = data.blockProgressChart || [];
+      var recentRevisions = data.recentRevisions || [];
 
       // Parse efficiency value for color coding
       var effStr = String(kpis.avgEfficiency || '0%');
@@ -869,15 +915,17 @@
 
       var html = '';
 
-      // === KPI CARDS ===
-      html += '<div class="kpi-grid">';
+      // === KPI CARDS (now 8 cards: 4x2 grid) ===
+      html += '<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">';
       html += '<div class="kpi-card"><div class="kpi-label">Total Reports</div><div class="kpi-value">' + (kpis.totalReports || 0) + '</div></div>';
       html += '<div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">' + (kpis.pending || 0) + '</div></div>';
       html += '<div class="kpi-card kpi-approved"><div class="kpi-label">Approved</div><div class="kpi-value">' + (kpis.approved || 0) + '</div></div>';
+      html += '<div class="kpi-card kpi-rejected"><div class="kpi-label">Rejected</div><div class="kpi-value">' + (kpis.rejected || 0) + '</div></div>';
       html += '<div class="kpi-card ' + effClass + '"><div class="kpi-label">Avg Efficiency</div><div class="kpi-value">' + effStr + '</div></div>';
       html += '<div class="kpi-card"><div class="kpi-label">Active Sites</div><div class="kpi-value">' + (kpis.activeSites || 0) + '</div></div>';
       html += '<div class="kpi-card"><div class="kpi-label">Reporting Rate (30d)</div><div class="kpi-value">' + (kpis.reportingRate || 0) + '%</div>';
       html += '<div class="rate-bar-outer"><div class="rate-bar-inner" style="width:' + Math.min(rateVal, 100) + '%;background:' + rateColor + '"></div></div></div>';
+      html += '<div class="kpi-card"><div class="kpi-label">Rejection Rate</div><div class="kpi-value" style="color:' + ((kpis.rejectionRate || 0) > 10 ? '#C44536' : '#2E7D32') + '">' + (kpis.rejectionRate || 0) + '%</div></div>';
       html += '</div>';
 
       // === CHARTS ROW 1: Submission Trend + Block Status ===
@@ -886,9 +934,27 @@
       html += '<div class="chart-card"><h3>Block Status Distribution</h3><div class="chart-container"><canvas id="chartBlockStatus"></canvas></div></div>';
       html += '</div>';
 
-      // === CHARTS ROW 2: Workforce Trend + Weekly Summary ===
+      // === CHARTS ROW 2: Workforce Trend + Block Progress ===
       html += '<div class="charts-row row-2">';
       html += '<div class="chart-card"><h3>Workforce Trend (Last 7 Days)</h3><div class="chart-container"><canvas id="chartWorkforce"></canvas></div></div>';
+      html += '<div class="chart-card"><h3>Latest Block Progress</h3><div class="chart-container"><canvas id="chartBlockProgress"></canvas></div></div>';
+      html += '</div>';
+
+      // === CHARTS ROW 3: Site Comparison + Weekly Summary ===
+      html += '<div class="charts-row row-3">';
+      html += '<div class="chart-card"><h3>Site Comparison (30d)</h3>';
+      if (siteComparison.length === 0) {
+        html += '<div style="text-align:center;padding:2rem;color:#999">No data</div>';
+      } else {
+        html += '<div style="overflow-x:auto"><table class="site-table"><tr><th>Site</th><th>Reports</th><th>Approved</th><th>Rate</th></tr>';
+        for (var sc = 0; sc < siteComparison.length; sc++) {
+          var si = siteComparison[sc];
+          var rateCol = si.approvalRate >= 80 ? '#2E7D32' : si.approvalRate >= 50 ? '#E65100' : '#C44536';
+          html += '<tr><td style="font-weight:600">' + si.site + '</td><td>' + si.totalReports + '</td><td>' + si.approvedReports + '</td><td style="color:' + rateCol + ';font-weight:600">' + si.approvalRate + '%</td></tr>';
+        }
+        html += '</table></div>';
+      }
+      html += '</div>';
       html += '<div class="chart-card"><h3>Weekly Summary</h3>';
       html += '<div style="overflow-x:auto">';
       html += '<table class="weekly-table"><tr><th>Week Starting</th><th>Reports</th><th>Sites Covered</th></tr>';
@@ -920,12 +986,28 @@
       }
       html += '</div>';
 
+      // === RECENT REVISIONS ===
+      html += '<div class="chart-card" style="margin-bottom:1rem"><h3>Recent Report Revisions</h3>';
+      if (recentRevisions.length === 0) {
+        html += '<div style="text-align:center;padding:1.5rem;color:#999;font-style:italic">No revisions yet</div>';
+      } else {
+        for (var ri = 0; ri < recentRevisions.length; ri++) {
+          var rev = recentRevisions[ri];
+          html += '<div class="revision-item">';
+          html += '<div class="revision-meta">' + rev.timestamp + ' | ' + rev.user + ' | ' + rev.reportId + '</div>';
+          html += '<div class="revision-changes">' + rev.changes + '</div>';
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+
       document.getElementById('analyticsContent').innerHTML = html;
 
       // === RENDER CHARTS ===
       renderSubmissionChart(submissionTrend);
       renderBlockStatusChart(blockStatusSummary);
       renderWorkforceChart(workforceTrend);
+      renderBlockProgressChart(blockProgressChart);
     }
 
     function renderSubmissionChart(trend) {
@@ -1088,6 +1170,57 @@
               ticks: { stepSize: 5, font: { size: 11 } },
               grid: { color: 'rgba(0,0,0,0.05)' }
             }
+          }
+        }
+      });
+    }
+
+    function renderBlockProgressChart(blockData) {
+      if (!blockData || blockData.length === 0) return;
+      var labels = [];
+      var values = [];
+      var colors = [];
+      for (var i = 0; i < blockData.length; i++) {
+        labels.push(blockData[i].block || '');
+        var achStr = String(blockData[i].achievement || '0%').replace('%', '');
+        var achVal = parseFloat(achStr) || 0;
+        values.push(achVal);
+        if (achVal >= 95) colors.push('#2E7D32');
+        else if (achVal >= 70) colors.push('#E65100');
+        else if (achVal > 0) colors.push('#C44536');
+        else colors.push('#BDBDBD');
+      }
+      var ctx = document.getElementById('chartBlockProgress');
+      if (!ctx) return;
+      chartInstances.blockProgress = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Target Achievement %',
+            data: values,
+            backgroundColor: colors,
+            borderRadius: 4,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#3E2723',
+              titleFont: { family: 'system-ui' },
+              bodyFont: { family: 'system-ui' },
+              callbacks: { label: function(ctx) { return ctx.raw + '%'; } }
+            }
+          },
+          scales: {
+            x: { beginAtZero: true, max: 120, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' } } }
           }
         }
       });
