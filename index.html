@@ -1,10 +1,10 @@
-<!-- Version 4.1 -->
+<!-- Version 5.0 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Director Portal - HDCRS V4</title>
+  <title>Director Portal - HDCRS V5</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -136,6 +136,11 @@
     .approve { background: var(--primary); color: white; }
     .reject { background: var(--danger); color: white; }
     .view { background: #5D4037; color: white; }
+    .btn-reviewed { background: var(--primary); color: white; }
+    .btn-edit { background: #FF8F00; color: white; }
+    .btn-save { background: var(--success); color: white; }
+    .Reviewed { background: #E8F5E9; color: var(--success); }
+    .btn-date-range { background: #5D4037; color: white; }
 
     /* Hidden */
     .hidden { display: none !important; }
@@ -289,7 +294,6 @@
     }
     .kpi-card.kpi-pending .kpi-value { color: var(--warn); }
     .kpi-card.kpi-approved .kpi-value { color: var(--success); }
-    .kpi-card.kpi-rejected .kpi-value { color: var(--danger); }
     .kpi-card.kpi-eff-high .kpi-value { color: var(--success); }
     .kpi-card.kpi-eff-mid .kpi-value { color: var(--warn); }
     .kpi-card.kpi-eff-low .kpi-value { color: var(--danger); }
@@ -320,9 +324,6 @@
       grid-template-columns: 3fr 2fr;
     }
     .charts-row.row-2 {
-      grid-template-columns: 1fr 1fr;
-    }
-    .charts-row.row-3 {
       grid-template-columns: 1fr 1fr;
     }
     .chart-card {
@@ -405,50 +406,11 @@
       font-style: italic;
     }
 
-    /* Site Comparison Table */
-    .site-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-    .site-table th {
-      background: #f3e7da;
-      color: var(--text);
-      padding: 0.5rem;
-      text-align: left;
-      border-bottom: 2px solid var(--primary);
-      font-weight: 600;
-      font-size: 0.82rem;
-    }
-    .site-table td {
-      padding: 0.4rem 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* Revisions Log */
-    .revision-item {
-      padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.82rem;
-    }
-    .revision-item:last-child { border-bottom: none; }
-    .revision-meta {
-      color: #888;
-      font-size: 0.78rem;
-      margin-bottom: 0.2rem;
-    }
-    .revision-changes {
-      color: #555;
-      word-break: break-word;
-      font-size: 0.8rem;
-    }
-
     /* Responsive */
     @media (max-width: 900px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
       .charts-row.row-1,
-      .charts-row.row-2,
-      .charts-row.row-3 { grid-template-columns: 1fr; }
+      .charts-row.row-2 { grid-template-columns: 1fr; }
     }
     @media (max-width: 500px) {
       .kpi-grid { grid-template-columns: 1fr; }
@@ -475,7 +437,7 @@
   <div id="dashboard" class="container hidden">
     <div class="dashboard-header">
       <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo">
-      <h1>Director Portal - HDCRS V4</h1>
+      <h1>Director Portal - HDCRS V5</h1>
     </div>
     <div class="user-bar">
       <span>Logged in as <strong id="loggedUser"></strong></span>
@@ -498,6 +460,23 @@
 
     <!-- TAB 2: ANALYTICS DASHBOARD -->
     <div id="analyticsTab" class="hidden" style="margin-top:1rem">
+      <!-- Date Range Report Generator -->
+      <div style="background:var(--card);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;border:1px solid var(--border)">
+        <h3 style="color:var(--primary);margin:0 0 0.5rem;font-size:1rem">Generate Period Report</h3>
+        <p style="font-size:0.85rem;color:#666;margin:0 0 0.6rem">Generate a summary report for a date range (weekly, monthly, quarterly, etc.)</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.8rem;align-items:flex-end">
+          <div>
+            <label style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.2rem">From Report Date:</label>
+            <input type="date" id="rangeFrom" style="padding:0.5rem;border:1px solid var(--border);border-radius:8px;font-size:0.95rem">
+          </div>
+          <div>
+            <label style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.2rem">To Report Date:</label>
+            <input type="date" id="rangeTo" style="padding:0.5rem;border:1px solid var(--border);border-radius:8px;font-size:0.95rem">
+          </div>
+          <button class="btn btn-date-range" id="genRangeReportBtn" style="padding:0.5rem 1.2rem">Generate Report</button>
+        </div>
+        <div id="rangeReportResult" style="margin-top:0.8rem;font-size:0.9rem"></div>
+      </div>
       <div id="analyticsContent">
         <div class="dashboard-loading">Loading dashboard data...</div>
       </div>
@@ -510,15 +489,16 @@
       <button class="modal-close" id="modalCloseBtn">X</button>
       <div id="modalContent"></div>
       <div class="modal-actions">
-        <textarea id="rejectReason" class="reject-reason" placeholder="Reason for rejection (optional)"></textarea>
-        <button class="btn approve" id="modalApproveBtn">Approve</button>
-        <button class="btn reject" id="modalRejectBtn">Reject</button>
+        <textarea id="rejectReason" class="reject-reason hidden" placeholder="Reason for rejection (optional)"></textarea>
+        <button class="btn btn-reviewed" id="modalReviewedBtn">Reviewed</button>
+        <button class="btn btn-edit" id="modalEditBtn">Edit</button>
+        <button class="btn btn-save hidden" id="modalSaveBtn">Save Edits</button>
       </div>
     </div>
   </div>
 
   <script>
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbwaWiQGo17E3I4PAN-gNEvEBFRgw5TMpcfBifIIkPddqdvyPgD1iAlqsoU2VDAnfY1J/exec';
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbxUWdMaOYIZ51kKQwJe8aPE5VW81lFA-Owzw6oQZWeSThld7t8eNC1ejEbfU-ik1Y2X/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
     var dashboardDataCache = null;
@@ -529,8 +509,10 @@
     document.getElementById('logoutLink').addEventListener('click', function(e) { e.preventDefault(); logout(); });
     document.getElementById('refreshBtn').addEventListener('click', loadReports);
     document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
-    document.getElementById('modalApproveBtn').addEventListener('click', function() { approveReport(null, false); });
-    document.getElementById('modalRejectBtn').addEventListener('click', function() { approveReport(null, true); });
+    document.getElementById('modalReviewedBtn').addEventListener('click', markReviewed);
+    document.getElementById('modalEditBtn').addEventListener('click', enableEditMode);
+    document.getElementById('modalSaveBtn').addEventListener('click', saveEdits);
+    document.getElementById('genRangeReportBtn').addEventListener('click', generateRangeReport);
 
     // Tab switching
     document.getElementById('tabReports').addEventListener('click', function() { switchTab('reports'); });
@@ -654,13 +636,11 @@
               html += '<tr><td style="font-size:0.75rem">' + (r.id || r['Report ID'] || '-') + '</td><td>' + (r.site || r.Site || '-') + '</td><td>' + displayDate + '</td><td>' + (r.reName || r['Resident Engineer'] || '-') + '</td>';
               html += '<td>' + (r.weather || '-') + '</td><td>' + (r.efficiency || '-') + '</td>';
               var st = r.status || r['Approval Status'] || '-';
-              html += '<td><span class="badge ' + st + '">' + st + '</span></td>';
+              // V5.0: Status values are 'pending to Review' and 'Reviewed'
+              if (st === 'Pending') st = 'pending to Review';
+              html += '<td><span class="badge ' + st.replace(/\s+/g, '') + '">' + st + '</span></td>';
               var rid = r.id || r['Report ID'] || '';
-              html += '<td><button class="btn view" data-id="' + rid + '">View</button>';
-              if (st === 'Pending') {
-                html += ' <button class="btn approve" data-id="' + rid + '">Approve</button>';
-              }
-              html += '</td></tr>';
+              html += '<td><button class="btn view" data-id="' + rid + '">View</button></td></tr>';
             }
           }
           html += '</table>';
@@ -670,8 +650,7 @@
           for (var j = 0; j < viewBtns.length; j++) {
             viewBtns[j].addEventListener('click', function() {
               var id = this.getAttribute('data-id');
-              if (this.classList.contains('approve')) { quickApprove(id); }
-              else { viewReport(id); }
+              viewReport(id);
             });
           }
         })
@@ -843,6 +822,7 @@
     }
 
     function approveReport(id, isReject) {
+      // V5.0: This function is kept for backward compat but no longer called from UI
       var reason = isReject ? document.getElementById('rejectReason').value.trim() : '';
       var email = isReject ? (loggedUser + ' [REJECTED]' + (reason ? ' - ' + reason : '')) : loggedUser;
       fetch(API_BASE, {
@@ -854,7 +834,156 @@
       });
     }
 
-    function quickApprove(id) { approveReport(id, false); }
+    // V5.0: Mark report as Reviewed (Director has checked the report)
+    function markReviewed() {
+      if (!currentReportId) return;
+      fetch(API_BASE, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'reviewReport', reportId: currentReportId, directorName: loggedUser, status: 'Reviewed' })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success) {
+          alert('Report marked as Reviewed. It will be sent to PM for approval.');
+        } else {
+          alert('Failed: ' + (d.message || 'Unknown error'));
+        }
+      })
+      .catch(function() { alert('Network error.'); })
+      .finally(function() {
+        closeModal();
+        loadReports();
+      });
+    }
+
+    // V5.0: Enable edit mode — make all display fields editable
+    var originalReportData = null;
+    function enableEditMode() {
+      var modalContent = document.getElementById('modalContent');
+      // Make all td content editable
+      var tds = modalContent.querySelectorAll('td, .meta-grid .label + *');
+      for (var i = 0; i < tds.length; i++) {
+        tds[i].contentEditable = true;
+        tds[i].style.background = '#FFF9C4';
+        tds[i].style.border = '1px dashed #FF8F00';
+        tds[i].style.borderRadius = '4px';
+        tds[i].style.padding = '2px 4px';
+      }
+      // Also make textareas editable
+      var textareas = modalContent.querySelectorAll('textarea');
+      for (var j = 0; j < textareas.length; j++) {
+        textareas[j].removeAttribute('readonly');
+        textareas[j].style.background = '#FFF9C4';
+        textareas[j].style.border = '1px dashed #FF8F00';
+      }
+      // Show Save Edits button
+      document.getElementById('modalSaveBtn').classList.remove('hidden');
+      document.getElementById('modalEditBtn').textContent = 'Editing...';
+      document.getElementById('modalEditBtn').disabled = true;
+    }
+
+    // V5.0: Save edits — collect edited content and send to backend
+    function saveEdits() {
+      if (!currentReportId) return;
+      var modalContent = document.getElementById('modalContent');
+      // Collect all edited fields as a flat key-value map
+      var edits = {};
+      var sections = modalContent.querySelectorAll('.section');
+      for (var s = 0; s < sections.length; s++) {
+        var sectionTitle = sections[s].querySelector('h3');
+        var sectionName = sectionTitle ? sectionTitle.textContent.trim() : 'Section' + s;
+        var tables = sections[s].querySelectorAll('table');
+        if (tables.length > 0) {
+          for (var t = 0; t < tables.length; t++) {
+            var rows = tables[t].querySelectorAll('tbody tr');
+            for (var r = 0; r < rows.length; r++) {
+              var cells = rows[r].querySelectorAll('td');
+              var rowData = [];
+              for (var c = 0; c < cells.length; c++) {
+                rowData.push(cells[c].textContent.trim());
+              }
+              edits[sectionName + '_row' + r] = rowData.join(' | ');
+            }
+          }
+        }
+      }
+      // Also grab meta-grid values
+      var metaLabels = modalContent.querySelectorAll('.meta-grid .label');
+      for (var m = 0; m < metaLabels.length; m++) {
+        var nextEl = metaLabels[m].nextElementSibling;
+        if (nextEl) edits[metaLabels[m].textContent.trim()] = nextEl.textContent.trim();
+      }
+
+      fetch(API_BASE, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'directorEditReport', reportId: currentReportId, directorName: loggedUser, edits: edits })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success) {
+          alert('Edits saved to backend successfully.');
+          // Disable edit mode
+          var tds = modalContent.querySelectorAll('td[contenteditable]');
+          for (var i = 0; i < tds.length; i++) {
+            tds[i].contentEditable = false;
+            tds[i].style.background = '';
+            tds[i].style.border = '';
+          }
+          document.getElementById('modalSaveBtn').classList.add('hidden');
+          document.getElementById('modalEditBtn').textContent = 'Edit';
+          document.getElementById('modalEditBtn').disabled = false;
+        } else {
+          alert('Failed to save edits: ' + (d.message || 'Unknown error'));
+        }
+      })
+      .catch(function() { alert('Network error saving edits.'); });
+    }
+
+    // V5.0: Generate date range report from Analytics Dashboard
+    function generateRangeReport() {
+      var from = document.getElementById('rangeFrom').value;
+      var to = document.getElementById('rangeTo').value;
+      var resultDiv = document.getElementById('rangeReportResult');
+      if (!from || !to) { resultDiv.innerHTML = '<span style="color:var(--danger)">Please select both From and To dates.</span>'; return; }
+      if (from > to) { resultDiv.innerHTML = '<span style="color:var(--danger)">From date must be before To date.</span>'; return; }
+
+      resultDiv.innerHTML = 'Generating report...';
+      fetch(API_BASE + '?endpoint=rangeReport&from=' + from + '&to=' + to)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success) { resultDiv.innerHTML = '<span style="color:var(--danger)">Error: ' + (data.message || 'Unknown') + '</span>'; return; }
+          var reports = data.reports || [];
+          var totalReports = reports.length;
+          var totalIssues = 0;
+          var avgEfficiency = 0;
+          var effCount = 0;
+          var sites = {};
+          for (var i = 0; i < reports.length; i++) {
+            var r = reports[i];
+            if (r.site) sites[r.site] = (sites[r.site] || 0) + 1;
+            if (r.efficiency) { avgEfficiency += (parseFloat(r.efficiency) || 0); effCount++; }
+            if (r.issues && r.issues.length) totalIssues += r.issues.length;
+          }
+          if (effCount > 0) avgEfficiency = (avgEfficiency / effCount).toFixed(1);
+
+          var html = '<div style="background:#f9f7f4;border-radius:8px;padding:1rem;border:1px solid var(--border);margin-top:0.5rem">';
+          html += '<h4 style="color:var(--primary);margin:0 0 0.5rem">Period Report: ' + from + ' to ' + to + '</h4>';
+          html += '<table style="font-size:0.85rem"><tr><th>Metric</th><th>Value</th></tr>';
+          html += '<tr><td>Total Reports</td><td>' + totalReports + '</td></tr>';
+          html += '<tr><td>Avg Efficiency</td><td>' + (avgEfficiency || 'N/A') + '</td></tr>';
+          html += '<tr><td>Total Issues</td><td>' + totalIssues + '</td></tr>';
+          html += '<tr><td>Sites Covered</td><td>' + Object.keys(sites).length + '</td></tr>';
+          html += '</table>';
+          if (Object.keys(sites).length > 0) {
+            html += '<h5 style="margin:0.5rem 0 0.2rem;color:var(--primary-dark)">Reports per Site</h5><ul>';
+            for (var s in sites) { html += '<li>' + s + ': ' + sites[s] + ' reports</li>'; }
+            html += '</ul>';
+          }
+          html += '</div>';
+          resultDiv.innerHTML = html;
+        })
+        .catch(function(err) { resultDiv.innerHTML = '<span style="color:var(--danger)">Network error: ' + err.message + '</span>'; });
+    }
 
     // ===== ANALYTICS DASHBOARD =====
     function destroyAllCharts() {
@@ -896,9 +1025,6 @@
       var blockStatusSummary = data.blockStatusSummary || {};
       var topIssues = data.topIssues || [];
       var weeklySummary = data.weeklySummary || [];
-      var siteComparison = data.siteComparison || [];
-      var blockProgressChart = data.blockProgressChart || [];
-      var recentRevisions = data.recentRevisions || [];
 
       // Parse efficiency value for color coding
       var effStr = String(kpis.avgEfficiency || '0%');
@@ -915,17 +1041,15 @@
 
       var html = '';
 
-      // === KPI CARDS (now 8 cards: 4x2 grid) ===
-      html += '<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">';
+      // === KPI CARDS ===
+      html += '<div class="kpi-grid">';
       html += '<div class="kpi-card"><div class="kpi-label">Total Reports</div><div class="kpi-value">' + (kpis.totalReports || 0) + '</div></div>';
       html += '<div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">' + (kpis.pending || 0) + '</div></div>';
       html += '<div class="kpi-card kpi-approved"><div class="kpi-label">Approved</div><div class="kpi-value">' + (kpis.approved || 0) + '</div></div>';
-      html += '<div class="kpi-card kpi-rejected"><div class="kpi-label">Rejected</div><div class="kpi-value">' + (kpis.rejected || 0) + '</div></div>';
       html += '<div class="kpi-card ' + effClass + '"><div class="kpi-label">Avg Efficiency</div><div class="kpi-value">' + effStr + '</div></div>';
       html += '<div class="kpi-card"><div class="kpi-label">Active Sites</div><div class="kpi-value">' + (kpis.activeSites || 0) + '</div></div>';
       html += '<div class="kpi-card"><div class="kpi-label">Reporting Rate (30d)</div><div class="kpi-value">' + (kpis.reportingRate || 0) + '%</div>';
       html += '<div class="rate-bar-outer"><div class="rate-bar-inner" style="width:' + Math.min(rateVal, 100) + '%;background:' + rateColor + '"></div></div></div>';
-      html += '<div class="kpi-card"><div class="kpi-label">Rejection Rate</div><div class="kpi-value" style="color:' + ((kpis.rejectionRate || 0) > 10 ? '#C44536' : '#2E7D32') + '">' + (kpis.rejectionRate || 0) + '%</div></div>';
       html += '</div>';
 
       // === CHARTS ROW 1: Submission Trend + Block Status ===
@@ -934,27 +1058,9 @@
       html += '<div class="chart-card"><h3>Block Status Distribution</h3><div class="chart-container"><canvas id="chartBlockStatus"></canvas></div></div>';
       html += '</div>';
 
-      // === CHARTS ROW 2: Workforce Trend + Block Progress ===
+      // === CHARTS ROW 2: Workforce Trend + Weekly Summary ===
       html += '<div class="charts-row row-2">';
       html += '<div class="chart-card"><h3>Workforce Trend (Last 7 Days)</h3><div class="chart-container"><canvas id="chartWorkforce"></canvas></div></div>';
-      html += '<div class="chart-card"><h3>Latest Block Progress</h3><div class="chart-container"><canvas id="chartBlockProgress"></canvas></div></div>';
-      html += '</div>';
-
-      // === CHARTS ROW 3: Site Comparison + Weekly Summary ===
-      html += '<div class="charts-row row-3">';
-      html += '<div class="chart-card"><h3>Site Comparison (30d)</h3>';
-      if (siteComparison.length === 0) {
-        html += '<div style="text-align:center;padding:2rem;color:#999">No data</div>';
-      } else {
-        html += '<div style="overflow-x:auto"><table class="site-table"><tr><th>Site</th><th>Reports</th><th>Approved</th><th>Rate</th></tr>';
-        for (var sc = 0; sc < siteComparison.length; sc++) {
-          var si = siteComparison[sc];
-          var rateCol = si.approvalRate >= 80 ? '#2E7D32' : si.approvalRate >= 50 ? '#E65100' : '#C44536';
-          html += '<tr><td style="font-weight:600">' + si.site + '</td><td>' + si.totalReports + '</td><td>' + si.approvedReports + '</td><td style="color:' + rateCol + ';font-weight:600">' + si.approvalRate + '%</td></tr>';
-        }
-        html += '</table></div>';
-      }
-      html += '</div>';
       html += '<div class="chart-card"><h3>Weekly Summary</h3>';
       html += '<div style="overflow-x:auto">';
       html += '<table class="weekly-table"><tr><th>Week Starting</th><th>Reports</th><th>Sites Covered</th></tr>';
@@ -986,28 +1092,12 @@
       }
       html += '</div>';
 
-      // === RECENT REVISIONS ===
-      html += '<div class="chart-card" style="margin-bottom:1rem"><h3>Recent Report Revisions</h3>';
-      if (recentRevisions.length === 0) {
-        html += '<div style="text-align:center;padding:1.5rem;color:#999;font-style:italic">No revisions yet</div>';
-      } else {
-        for (var ri = 0; ri < recentRevisions.length; ri++) {
-          var rev = recentRevisions[ri];
-          html += '<div class="revision-item">';
-          html += '<div class="revision-meta">' + rev.timestamp + ' | ' + rev.user + ' | ' + rev.reportId + '</div>';
-          html += '<div class="revision-changes">' + rev.changes + '</div>';
-          html += '</div>';
-        }
-      }
-      html += '</div>';
-
       document.getElementById('analyticsContent').innerHTML = html;
 
       // === RENDER CHARTS ===
       renderSubmissionChart(submissionTrend);
       renderBlockStatusChart(blockStatusSummary);
       renderWorkforceChart(workforceTrend);
-      renderBlockProgressChart(blockProgressChart);
     }
 
     function renderSubmissionChart(trend) {
@@ -1170,57 +1260,6 @@
               ticks: { stepSize: 5, font: { size: 11 } },
               grid: { color: 'rgba(0,0,0,0.05)' }
             }
-          }
-        }
-      });
-    }
-
-    function renderBlockProgressChart(blockData) {
-      if (!blockData || blockData.length === 0) return;
-      var labels = [];
-      var values = [];
-      var colors = [];
-      for (var i = 0; i < blockData.length; i++) {
-        labels.push(blockData[i].block || '');
-        var achStr = String(blockData[i].achievement || '0%').replace('%', '');
-        var achVal = parseFloat(achStr) || 0;
-        values.push(achVal);
-        if (achVal >= 95) colors.push('#2E7D32');
-        else if (achVal >= 70) colors.push('#E65100');
-        else if (achVal > 0) colors.push('#C44536');
-        else colors.push('#BDBDBD');
-      }
-      var ctx = document.getElementById('chartBlockProgress');
-      if (!ctx) return;
-      chartInstances.blockProgress = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Target Achievement %',
-            data: values,
-            backgroundColor: colors,
-            borderRadius: 4,
-            barPercentage: 0.7,
-            categoryPercentage: 0.6
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#3E2723',
-              titleFont: { family: 'system-ui' },
-              bodyFont: { family: 'system-ui' },
-              callbacks: { label: function(ctx) { return ctx.raw + '%'; } }
-            }
-          },
-          scales: {
-            x: { beginAtZero: true, max: 120, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
-            y: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' } } }
           }
         }
       });
