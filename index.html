@@ -42,6 +42,18 @@
       color: var(--primary);
       margin: 0.5rem 0 1rem;
     }
+    .login-label {
+      display: block;
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+      margin-top: 0.5rem;
+    }
+    .login-label:first-of-type {
+      margin-top: 0;
+    }
     .login-box input {
       width: 100%;
       padding: 0.6rem;
@@ -427,7 +439,9 @@
   <div id="loginScreen" class="login-box">
     <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo" class="login-logo">
     <h2>Director Login</h2>
+    <label for="loginName" class="login-label">Name</label>
     <input type="text" id="loginName" placeholder="Full Name">
+    <label for="loginPassword" class="login-label">Password</label>
     <input type="password" id="loginPassword" placeholder="Password">
     <button class="btn approve" id="loginBtn" style="width:100%;padding:0.6rem;margin-top:0.5rem">Login</button>
     <div class="error" id="loginError"></div>
@@ -574,13 +588,13 @@
           } else if (d.success) {
             err.textContent = 'Login OK but no role assigned. Check Staff_Accounts sheet.';
           } else {
-            err.textContent = 'Invalid name or password. Check Staff_Accounts sheet.';
+            err.textContent = 'Invalid name or password. Make sure your account exists in Staff_Accounts sheet with Role = Director.';
           }
         })
         .catch(function(e) {
           console.error('[Director] Login error: ' + e.message);
           if (e.message.indexOf('Failed to fetch') !== -1) {
-            err.textContent = 'Network error. Cannot reach server.';
+            err.textContent = 'Network error — cannot reach backend. Check that Code.gs is deployed and API_BASE URL is correct.';
           } else {
             err.textContent = 'Error: ' + e.message;
           }
