@@ -1,4 +1,4 @@
-<!-- Version 5.0 -->
+<!-- Version 5.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -512,6 +512,9 @@
   </div>
 
   <script>
+    console.log('[Director] Portal V5.1 loaded — role check is case-insensitive.');
+
+    // V5.1: API_BASE updated to the current live deployment (matches RE portal).
     var API_BASE = 'https://script.google.com/macros/s/AKfycbzurS6Ybn_a-65QQrWBCcUxSX8LPPVNAg5jn_kJAxNGmBiq0mypX21yXrSxM2toWNTO/exec';
     var currentReportId = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
@@ -556,7 +559,7 @@
       }
     }
 
-    // ===== LOGIN =====
+    // ===== LOGIN (V5.1 — case-insensitive role, full diagnostics) =====
     function attemptLogin() {
       var name = document.getElementById('loginName').value.trim();
       var pw = document.getElementById('loginPassword').value.trim();
@@ -576,25 +579,65 @@
         .then(function(r) {
           console.log('[Director] Response status: ' + r.status);
           if (!r.ok) throw new Error('Server returned ' + r.status);
-          return r.json();
+          return r.text();
         })
-        .then(function(d) {
+        .then(function(text) {
+          var d;
+          try { d = JSON.parse(text); }
+          catch (e) {
+            throw new Error('Backend did not return JSON. Raw response: ' + text.slice(0, 200));
+          }
           console.log('[Director] Response: ' + JSON.stringify(d));
-          if (d.success && d.role === 'Director') {
+
+          // Normalize the returned role to uppercase letters only
+          var roleNorm = String(d.role || '').toUpperCase().replace(/[^A-Z]/g, '');
+
+          // --- Success: accept DIRECTOR in any casing ---
+          if (d.success && roleNorm === 'DIRECTOR') {
             sessionStorage.setItem('hdcre_director', name);
             showDashboard(name);
-          } else if (d.success && d.role) {
-            err.textContent = 'Access denied. Your role is: ' + d.role + '. This portal is for Directors only.';
-          } else if (d.success) {
-            err.textContent = 'Login OK but no role assigned. Check Staff_Accounts sheet.';
-          } else {
-            err.textContent = 'Invalid name or password. Make sure your account exists in Staff_Accounts sheet with Role = Director.';
+            return;
           }
+
+          // --- Logged in but wrong role ---
+          if (d.success && d.role) {
+            err.textContent = 'Access denied. Your role is "' + d.role +
+              '" (raw: "' + (d.roleRaw || '?') + '"). This portal is for Directors only.';
+            return;
+          }
+
+          // --- Logged in but no role assigned ---
+          if (d.success) {
+            err.textContent = 'Login OK but no Role assigned. Ask the admin to set your Role to "Director".';
+            return;
+          }
+
+          // --- Failure: diagnostic message ---
+          var msg = 'Login failed. ';
+          switch (d.reason) {
+            case 'SHEET_NOT_FOUND':
+              msg += 'No staff sheet found. Tried: ' + (d.triedSheets || []).join(', ') +
+                     '. Create a sheet named "Staff_Accounts".';
+              break;
+            case 'HEADERS_MISSING':
+              msg += 'Staff sheet headers are wrong. Found: ' + JSON.stringify(d.headers || []) +
+                     '. Expected: Name | Password | Role.';
+              break;
+            case 'NO_MATCH':
+              msg += 'Name/password did not match. Sheet "' + (d.sheetUsed || '?') + '" has ' +
+                     (d.totalRows || 0) + ' data row(s). Names found: ' +
+                     (d.namesSample || []).join(', ') + '.';
+              break;
+            default:
+              msg += (d.message || 'Invalid name or password.') +
+                     ' Make sure your account exists in Staff_Accounts with Role = Director.';
+          }
+          err.textContent = msg;
         })
         .catch(function(e) {
           console.error('[Director] Login error: ' + e.message);
           if (e.message.indexOf('Failed to fetch') !== -1) {
-            err.textContent = 'Network error — cannot reach backend. Check that Code.gs is deployed and API_BASE URL is correct.';
+            err.textContent = 'Network error — cannot reach backend. Check that Code.gs is deployed (Web App, "Anyone" access) and API_BASE is the /exec URL.';
           } else {
             err.textContent = 'Error: ' + e.message;
           }
@@ -632,7 +675,6 @@
           console.log('[Director] Reports response type: ' + typeof data);
           console.log('[Director] Reports data:', JSON.stringify(data).substring(0, 500));
 
-          // Handle both bare array and wrapped object
           var reports = Array.isArray(data) ? data : (data.reports || []);
 
           var html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
@@ -642,7 +684,6 @@
             for (var i = 0; i < reports.length; i++) {
               var r = reports[i];
               var displayDate = r.date || '';
-              // Convert ISO date string to readable format
               if (displayDate && displayDate.indexOf('T') > -1) {
                 var d = new Date(displayDate);
                 displayDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -650,7 +691,6 @@
               html += '<tr><td style="font-size:0.75rem">' + (r.id || r['Report ID'] || '-') + '</td><td>' + (r.site || r.Site || '-') + '</td><td>' + displayDate + '</td><td>' + (r.reName || r['Resident Engineer'] || '-') + '</td>';
               html += '<td>' + (r.weather || '-') + '</td><td>' + (r.efficiency || '-') + '</td>';
               var st = r.status || r['Approval Status'] || '-';
-              // V5.0: Status values are 'pending to Review' and 'Reviewed'
               if (st === 'Pending') st = 'pending to Review';
               html += '<td><span class="badge ' + st.replace(/\s+/g, '') + '">' + st + '</span></td>';
               var rid = r.id || r['Report ID'] || '';
@@ -683,9 +723,6 @@
           console.log('[Director] ReportDetail response:', JSON.stringify(data).substring(0, 1000));
           if (!data.success) { alert('Could not load report: ' + (data.message || '')); return; }
           var rp = data.report;
-          console.log('[Director] tasks count:', (rp.tasks ? rp.tasks.length : 'null'));
-          console.log('[Director] workforce count:', (rp.workforce ? rp.workforce.length : 'null'));
-          if (rp.tasks && rp.tasks.length > 0) console.log('[Director] first task:', JSON.stringify(rp.tasks[0]));
           var h = '<h2 style="color:var(--primary);margin-top:0">' + rp.site + ' - ' + rp.date + '</h2>';
           h += '<div class="meta-grid"><span class="label">RE:</span><span>' + rp.reName + '</span>';
           h += '<span class="label">Weather:</span><span>' + (rp.weatherAM || '') + ' / ' + (rp.weatherPM || '') + '</span>';
@@ -836,7 +873,7 @@
     }
 
     function approveReport(id, isReject) {
-      // V5.0: This function is kept for backward compat but no longer called from UI
+      // Kept for backward compat — not called from current UI
       var reason = isReject ? document.getElementById('rejectReason').value.trim() : '';
       var email = isReject ? (loggedUser + ' [REJECTED]' + (reason ? ' - ' + reason : '')) : loggedUser;
       fetch(API_BASE, {
@@ -848,7 +885,6 @@
       });
     }
 
-    // V5.0: Mark report as Reviewed (Director has checked the report)
     function markReviewed() {
       if (!currentReportId) return;
       fetch(API_BASE, {
@@ -870,11 +906,8 @@
       });
     }
 
-    // V5.0: Enable edit mode — make all display fields editable
-    var originalReportData = null;
     function enableEditMode() {
       var modalContent = document.getElementById('modalContent');
-      // Make all td content editable
       var tds = modalContent.querySelectorAll('td, .meta-grid .label + *');
       for (var i = 0; i < tds.length; i++) {
         tds[i].contentEditable = true;
@@ -883,24 +916,20 @@
         tds[i].style.borderRadius = '4px';
         tds[i].style.padding = '2px 4px';
       }
-      // Also make textareas editable
       var textareas = modalContent.querySelectorAll('textarea');
       for (var j = 0; j < textareas.length; j++) {
         textareas[j].removeAttribute('readonly');
         textareas[j].style.background = '#FFF9C4';
         textareas[j].style.border = '1px dashed #FF8F00';
       }
-      // Show Save Edits button
       document.getElementById('modalSaveBtn').classList.remove('hidden');
       document.getElementById('modalEditBtn').textContent = 'Editing...';
       document.getElementById('modalEditBtn').disabled = true;
     }
 
-    // V5.0: Save edits — collect edited content and send to backend
     function saveEdits() {
       if (!currentReportId) return;
       var modalContent = document.getElementById('modalContent');
-      // Collect all edited fields as a flat key-value map
       var edits = {};
       var sections = modalContent.querySelectorAll('.section');
       for (var s = 0; s < sections.length; s++) {
@@ -921,7 +950,6 @@
           }
         }
       }
-      // Also grab meta-grid values
       var metaLabels = modalContent.querySelectorAll('.meta-grid .label');
       for (var m = 0; m < metaLabels.length; m++) {
         var nextEl = metaLabels[m].nextElementSibling;
@@ -936,7 +964,6 @@
       .then(function(d) {
         if (d.success) {
           alert('Edits saved to backend successfully.');
-          // Disable edit mode
           var tds = modalContent.querySelectorAll('td[contenteditable]');
           for (var i = 0; i < tds.length; i++) {
             tds[i].contentEditable = false;
@@ -953,7 +980,6 @@
       .catch(function() { alert('Network error saving edits.'); });
     }
 
-    // V5.0: Generate date range report from Analytics Dashboard
     function generateRangeReport() {
       var from = document.getElementById('rangeFrom').value;
       var to = document.getElementById('rangeTo').value;
@@ -1040,14 +1066,12 @@
       var topIssues = data.topIssues || [];
       var weeklySummary = data.weeklySummary || [];
 
-      // Parse efficiency value for color coding
       var effStr = String(kpis.avgEfficiency || '0%');
       var effNum = parseInt(effStr.replace('%', ''), 10) || 0;
       var effClass = 'kpi-eff-low';
       if (effNum > 80) { effClass = 'kpi-eff-high'; }
       else if (effNum >= 50) { effClass = 'kpi-eff-mid'; }
 
-      // Reporting rate bar color
       var rateVal = parseInt(kpis.reportingRate, 10) || 0;
       var rateColor = '#00695C';
       if (rateVal < 30) { rateColor = '#C44536'; }
@@ -1055,7 +1079,6 @@
 
       var html = '';
 
-      // === KPI CARDS ===
       html += '<div class="kpi-grid">';
       html += '<div class="kpi-card"><div class="kpi-label">Total Reports</div><div class="kpi-value">' + (kpis.totalReports || 0) + '</div></div>';
       html += '<div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">' + (kpis.pending || 0) + '</div></div>';
@@ -1066,13 +1089,11 @@
       html += '<div class="rate-bar-outer"><div class="rate-bar-inner" style="width:' + Math.min(rateVal, 100) + '%;background:' + rateColor + '"></div></div></div>';
       html += '</div>';
 
-      // === CHARTS ROW 1: Submission Trend + Block Status ===
       html += '<div class="charts-row row-1">';
       html += '<div class="chart-card"><h3>Submission Trend (Last 30 Days)</h3><div class="chart-container"><canvas id="chartSubmission"></canvas></div></div>';
       html += '<div class="chart-card"><h3>Block Status Distribution</h3><div class="chart-container"><canvas id="chartBlockStatus"></canvas></div></div>';
       html += '</div>';
 
-      // === CHARTS ROW 2: Workforce Trend + Weekly Summary ===
       html += '<div class="charts-row row-2">';
       html += '<div class="chart-card"><h3>Workforce Trend (Last 7 Days)</h3><div class="chart-container"><canvas id="chartWorkforce"></canvas></div></div>';
       html += '<div class="chart-card"><h3>Weekly Summary</h3>';
@@ -1089,7 +1110,6 @@
       html += '</table></div></div>';
       html += '</div>';
 
-      // === RECENT ISSUES ===
       html += '<div class="issues-section"><h3>Recent Issues</h3>';
       if (topIssues.length === 0) {
         html += '<div class="no-issues">No issues reported</div>';
@@ -1108,7 +1128,6 @@
 
       document.getElementById('analyticsContent').innerHTML = html;
 
-      // === RENDER CHARTS ===
       renderSubmissionChart(submissionTrend);
       renderBlockStatusChart(blockStatusSummary);
       renderWorkforceChart(workforceTrend);
