@@ -1,148 +1,37 @@
-<!-- Version 5.1 -->
+<!-- Version 6.0 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Director Portal - HDCRS V5</title>
+  <title>Director Portal - HDCRS V6</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --primary: #00695C;
-      --primary-dark: #004D40;
-      --bg: #F5E4D0;
-      --card: #ffffff;
-      --text: #3E2723;
-      --border: #D7CCC8;
-      --danger: #C44536;
-      --warn: #E65100;
-      --success: #2E7D32;
+      --primary: #00695C; --primary-dark: #004D40; --bg: #F5E4D0;
+      --card: #ffffff; --text: #3E2723; --border: #D7CCC8;
+      --danger: #C44536; --warn: #E65100; --success: #2E7D32;
     }
     * { box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      font-family: system-ui, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      color: var(--text);
-    }
-
-    /* Login */
-    .login-box {
-      max-width: 400px;
-      width: 100%;
-      margin: 3rem auto 0;
-      background: var(--card);
-      border-radius: 20px;
-      padding: 2rem 1.5rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-      text-align: center;
-    }
-    .login-box h2 {
-      color: var(--primary);
-      margin: 0.5rem 0 1rem;
-    }
-    .login-label {
-      display: block;
-      text-align: left;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.2rem;
-      margin-top: 0.5rem;
-    }
-    .login-label:first-of-type {
-      margin-top: 0;
-    }
-    .login-box input {
-      width: 100%;
-      padding: 0.6rem;
-      margin: 0.4rem 0;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-    }
-    .login-logo {
-      max-width: 140px;
-      margin-bottom: 0.5rem;
-    }
-
-    /* Main Container */
-    .container {
-      max-width: 1300px;
-      width: 100%;
-      margin: 0 auto;
-      background: var(--card);
-      border-radius: 20px;
-      padding: 1.5rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-    }
-
-    /* Header */
-    .dashboard-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    body { background: var(--bg); font-family: system-ui, sans-serif; margin: 0; padding: 1rem; color: var(--text); }
+    .login-box { max-width: 400px; width: 100%; margin: 3rem auto 0; background: var(--card); border-radius: 20px; padding: 2rem 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.06); text-align: center; }
+    .login-box h2 { color: var(--primary); margin: 0.5rem 0 1rem; }
+    .login-label { display: block; text-align: left; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; margin-top: 0.5rem; }
+    .login-label:first-of-type { margin-top: 0; }
+    .login-box input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+    .login-logo { max-width: 140px; margin-bottom: 0.5rem; }
+    .container { max-width: 1300px; width: 100%; margin: 0 auto; background: var(--card); border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .dashboard-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .dashboard-header img { height: 36px; }
-    .dashboard-header h1 {
-      color: var(--primary);
-      margin: 0;
-      font-size: 1.3rem;
-    }
-    .user-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 0.5rem 0 0;
-      font-size: 0.9rem;
-      color: #555;
-    }
-    .user-bar a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-    }
+    .dashboard-header h1 { color: var(--primary); margin: 0; font-size: 1.3rem; }
+    .user-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0.5rem 0 0; font-size: 0.9rem; color: #555; }
+    .user-bar a { color: var(--primary); text-decoration: none; font-weight: 600; }
     .user-bar a:hover { text-decoration: underline; }
-
-    /* Tabs */
-    .tab-bar {
-      display: flex;
-      gap: 0;
-      margin: 1rem 0 0;
-      border-bottom: 2px solid var(--border);
-    }
-    .tab-btn {
-      padding: 0.6rem 1.5rem;
-      border: none;
-      background: transparent;
-      color: #888;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: color 0.2s, border-color 0.2s;
-    }
+    .tab-bar { display: flex; gap: 0; margin: 1rem 0 0; border-bottom: 2px solid var(--border); }
+    .tab-btn { padding: 0.6rem 1.5rem; border: none; background: transparent; color: #888; font-weight: 600; font-size: 0.95rem; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color 0.2s, border-color 0.2s; }
     .tab-btn:hover { color: var(--primary-dark); }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-
-    /* Buttons */
-    .btn {
-      padding: 0.4rem 1rem;
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
-      font-weight: 600;
-      margin: 0.15rem;
-      font-size: 0.85rem;
-      transition: opacity 0.15s;
-    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .btn { padding: 0.4rem 1rem; border: none; border-radius: 16px; cursor: pointer; font-weight: 600; margin: 0.15rem; font-size: 0.85rem; transition: opacity 0.15s; }
     .btn:hover { opacity: 0.85; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .approve { background: var(--primary); color: white; }
@@ -153,276 +42,65 @@
     .btn-save { background: var(--success); color: white; }
     .Reviewed { background: #E8F5E9; color: var(--success); }
     .btn-date-range { background: #5D4037; color: white; }
-
-    /* Hidden */
     .hidden { display: none !important; }
-
-    /* Error */
-    .error {
-      color: var(--danger);
-      margin-top: 0.5rem;
-      min-height: 1.2rem;
-      font-size: 0.9rem;
-    }
-
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0.5rem 0;
-      font-size: 0.85rem;
-    }
-    th {
-      background: #f3e7da;
-      color: var(--text);
-      padding: 0.5rem;
-      text-align: left;
-      border-bottom: 2px solid var(--primary);
-      font-weight: 600;
-    }
-    td {
-      padding: 0.4rem 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* Badge */
-    .badge {
-      padding: 0.15rem 0.6rem;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.8rem;
-      display: inline-block;
-    }
+    .error { color: var(--danger); margin-top: 0.5rem; min-height: 1.2rem; font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
+    th { background: #f3e7da; color: var(--text); padding: 0.5rem; text-align: left; border-bottom: 2px solid var(--primary); font-weight: 600; }
+    td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
+    .badge { padding: 0.15rem 0.6rem; border-radius: 10px; font-weight: 600; font-size: 0.8rem; display: inline-block; }
     .Pending { background: #FFF3E0; color: #E65100; }
     .Approved { background: #E0F2F1; color: var(--primary); }
     .Rejected { background: #FFEBEE; color: var(--danger); }
-
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      max-width: 900px;
-      width: 95%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-close {
-      float: right;
-      background: none;
-      border: none;
-      font-size: 1.4rem;
-      cursor: pointer;
-      color: #999;
-    }
-    .modal-actions {
-      text-align: center;
-      margin-top: 1rem;
-    }
-    .reject-reason {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin: 0.5rem 0;
-      font-family: inherit;
-    }
-
-    /* Report Detail Sections */
+    .Reviewed { background: #E8F5E9; color: var(--success); }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; border-radius: 16px; padding: 1.5rem; max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto; }
+    .modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #999; }
+    .modal-actions { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .modal-actions textarea { width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; margin-bottom: 0.5rem; min-height: 60px; }
+    .modal-actions .action-row { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
     .section { margin: 1.2rem 0 0.5rem; }
-    .section h3 {
-      color: var(--primary);
-      margin: 0 0 0.3rem;
-      font-size: 1rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.2rem;
-    }
+    .section h3 { color: var(--primary); margin: 0 0 0.3rem; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.2rem; }
     .section table { font-size: 0.82rem; }
-    .meta-grid {
-      display: grid;
-      grid-template-columns: 160px 1fr;
-      gap: 0.2rem 10px;
-      font-size: 0.9rem;
-    }
+    .meta-grid { display: grid; grid-template-columns: 160px 1fr; gap: 0.2rem 10px; font-size: 0.9rem; }
     .meta-grid .label { font-weight: 600; color: #555; }
-    .photo-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .photo-grid img {
-      max-width: 130px;
-      max-height: 100px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    /* ===== DASHBOARD ANALYTICS ===== */
-    .dashboard-loading {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #888;
-      font-size: 1rem;
-    }
-
-    /* KPI Grid */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.2rem;
-    }
-    .kpi-card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 1.2rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
-      text-align: center;
-    }
-    .kpi-card .kpi-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--primary);
-      line-height: 1.1;
-      margin: 0.3rem 0;
-    }
-    .kpi-card .kpi-label {
-      font-size: 0.8rem;
-      color: #888;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .photo-grid img { max-width: 130px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); }
+    .dashboard-loading { text-align: center; padding: 3rem 1rem; color: #888; font-size: 1rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.2rem; }
+    .kpi-card { background: var(--card); border-radius: 16px; padding: 1.2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid var(--border); text-align: center; }
+    .kpi-card .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); line-height: 1.1; margin: 0.3rem 0; }
+    .kpi-card .kpi-label { font-size: 0.8rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .kpi-card.kpi-pending .kpi-value { color: var(--warn); }
     .kpi-card.kpi-approved .kpi-value { color: var(--success); }
     .kpi-card.kpi-eff-high .kpi-value { color: var(--success); }
     .kpi-card.kpi-eff-mid .kpi-value { color: var(--warn); }
     .kpi-card.kpi-eff-low .kpi-value { color: var(--danger); }
-
-    /* Reporting Rate Bar */
-    .rate-bar-outer {
-      width: 80%;
-      height: 10px;
-      background: #E0E0E0;
-      border-radius: 5px;
-      margin: 0.5rem auto 0;
-      overflow: hidden;
-    }
-    .rate-bar-inner {
-      height: 100%;
-      border-radius: 5px;
-      background: var(--primary);
-      transition: width 0.6s ease;
-    }
-
-    /* Charts Grid */
-    .charts-row {
-      display: grid;
-      gap: 1rem;
-      margin-bottom: 1.2rem;
-    }
-    .charts-row.row-1 {
-      grid-template-columns: 3fr 2fr;
-    }
-    .charts-row.row-2 {
-      grid-template-columns: 1fr 1fr;
-    }
-    .chart-card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 1rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
-    }
-    .chart-card h3 {
-      margin: 0 0 0.5rem;
-      color: var(--primary);
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-    .chart-container {
-      position: relative;
-      height: 300px;
-      width: 100%;
-    }
-
-    /* Weekly Summary Table inside Chart Card */
-    .weekly-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-    .weekly-table th {
-      background: #f3e7da;
-      color: var(--text);
-      padding: 0.5rem;
-      text-align: left;
-      border-bottom: 2px solid var(--primary);
-      font-weight: 600;
-      font-size: 0.82rem;
-    }
-    .weekly-table td {
-      padding: 0.4rem 0.5rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
-
-    /* Issues Section */
-    .issues-section {
-      margin-bottom: 1rem;
-    }
-    .issues-section h3 {
-      color: var(--primary);
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-    .issues-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 0.8rem;
-    }
-    .issue-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--warn);
-      border-radius: 12px;
-      padding: 0.8rem 1rem;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-    }
-    .issue-card .issue-block {
-      font-weight: 700;
-      color: var(--primary-dark);
-      font-size: 0.9rem;
-      margin-bottom: 0.2rem;
-    }
-    .issue-card .issue-details {
-      font-size: 0.85rem;
-      color: #555;
-    }
-    .no-issues {
-      text-align: center;
-      padding: 1.5rem;
-      color: #999;
-      font-style: italic;
-    }
-
-    /* Responsive */
+    .rate-bar-outer { width: 80%; height: 10px; background: #E0E0E0; border-radius: 5px; margin: 0.5rem auto 0; overflow: hidden; }
+    .rate-bar-inner { height: 100%; border-radius: 5px; background: var(--primary); transition: width 0.6s ease; }
+    .charts-row { display: grid; gap: 1rem; margin-bottom: 1.2rem; }
+    .charts-row.row-1 { grid-template-columns: 3fr 2fr; }
+    .charts-row.row-2 { grid-template-columns: 1fr 1fr; }
+    .chart-card { background: var(--card); border-radius: 16px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+    .chart-card h3 { margin: 0 0 0.5rem; color: var(--primary); font-size: 0.95rem; font-weight: 600; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+    .weekly-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .weekly-table th { background: #f3e7da; color: var(--text); padding: 0.5rem; text-align: left; border-bottom: 2px solid var(--primary); font-weight: 600; font-size: 0.82rem; }
+    .weekly-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .issues-section { margin-bottom: 1rem; }
+    .issues-section h3 { color: var(--primary); margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600; }
+    .issues-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; }
+    .issue-card { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--warn); border-radius: 12px; padding: 0.8rem 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.04); }
+    .issue-card .issue-block { font-weight: 700; color: var(--primary-dark); font-size: 0.9rem; margin-bottom: 0.2rem; }
+    .issue-card .issue-details { font-size: 0.85rem; color: #555; }
+    .no-issues { text-align: center; padding: 1.5rem; color: #999; font-style: italic; }
+    .edit-panel { background: #FFFDE7; border: 2px dashed #FF8F00; border-radius: 12px; padding: 1rem; margin: 1rem 0; }
+    .edit-panel h4 { color: #E65100; margin: 0 0 0.6rem; font-size: 0.95rem; }
+    .edit-panel label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin: 0.5rem 0 0.2rem; }
+    .edit-panel textarea, .edit-panel select, .edit-panel input { width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.9rem; }
+    .edit-panel textarea { min-height: 50px; }
     @media (max-width: 900px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-      .charts-row.row-1,
-      .charts-row.row-2 { grid-template-columns: 1fr; }
+      .charts-row.row-1, .charts-row.row-2 { grid-template-columns: 1fr; }
     }
     @media (max-width: 500px) {
       .kpi-grid { grid-template-columns: 1fr; }
@@ -435,7 +113,6 @@
 </head>
 <body>
 
-  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="login-box">
     <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo" class="login-logo">
     <h2>Director Login</h2>
@@ -447,11 +124,10 @@
     <div class="error" id="loginError"></div>
   </div>
 
-  <!-- MAIN DASHBOARD CONTAINER -->
   <div id="dashboard" class="container hidden">
     <div class="dashboard-header">
       <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo">
-      <h1>Director Portal - HDCRS V5</h1>
+      <h1>Director Portal - HDCRS V6</h1>
     </div>
     <div class="user-bar">
       <span>Logged in as <strong id="loggedUser"></strong></span>
@@ -460,21 +136,17 @@
       <button class="btn view" id="refreshBtn">Refresh</button>
     </div>
 
-    <!-- TAB BAR -->
     <div class="tab-bar">
       <button class="tab-btn active" id="tabReports" data-tab="reports">Reports</button>
       <button class="tab-btn" id="tabAnalytics" data-tab="analytics">Analytics Dashboard</button>
     </div>
 
-    <!-- TAB 1: REPORTS -->
     <div id="reportsTab" style="margin-top:1rem">
       <div id="reportsTable">Loading...</div>
       <div id="message" class="error"></div>
     </div>
 
-    <!-- TAB 2: ANALYTICS DASHBOARD -->
     <div id="analyticsTab" class="hidden" style="margin-top:1rem">
-      <!-- Date Range Report Generator -->
       <div style="background:var(--card);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;border:1px solid var(--border)">
         <h3 style="color:var(--primary);margin:0 0 0.5rem;font-size:1rem">Generate Period Report</h3>
         <p style="font-size:0.85rem;color:#666;margin:0 0 0.6rem">Generate a summary report for a date range (weekly, monthly, quarterly, etc.)</p>
@@ -487,6 +159,12 @@
             <label style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.2rem">To Report Date:</label>
             <input type="date" id="rangeTo" style="padding:0.5rem;border:1px solid var(--border);border-radius:8px;font-size:0.95rem">
           </div>
+          <div>
+            <label style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.2rem">Site (optional):</label>
+            <select id="rangeSite" style="padding:0.5rem 0.8rem;border:1px solid var(--border);border-radius:8px;font-size:0.95rem">
+              <option value="">-- All Sites --</option>
+            </select>
+          </div>
           <button class="btn btn-date-range" id="genRangeReportBtn" style="padding:0.5rem 1.2rem">Generate Report</button>
         </div>
         <div id="rangeReportResult" style="margin-top:0.8rem;font-size:0.9rem"></div>
@@ -497,31 +175,48 @@
     </div>
   </div>
 
-  <!-- REPORT VIEW MODAL -->
   <div id="reportModal" class="modal-overlay hidden">
     <div class="modal-content">
       <button class="modal-close" id="modalCloseBtn">X</button>
       <div id="modalContent"></div>
+
+      <div id="editPanel" class="edit-panel hidden">
+        <h4>Edit Report Summary (DailyLog)</h4>
+        <label for="editActivitySummary">Activity Summary</label>
+        <textarea id="editActivitySummary"></textarea>
+        <label for="editEfficiency">Resource Efficiency Rating</label>
+        <select id="editEfficiency">
+          <option value="">-- None --</option>
+          <option>Excellent</option><option>Good</option><option>Fair</option><option>Poor</option>
+        </select>
+        <label for="editRecommendations">Recommendations</label>
+        <textarea id="editRecommendations"></textarea>
+        <label for="editHoldPoints">Hold Point Requests</label>
+        <textarea id="editHoldPoints"></textarea>
+      </div>
+
       <div class="modal-actions">
-        <textarea id="rejectReason" class="reject-reason hidden" placeholder="Reason for rejection (optional)"></textarea>
-        <button class="btn btn-reviewed" id="modalReviewedBtn">Reviewed</button>
-        <button class="btn btn-edit" id="modalEditBtn">Edit</button>
-        <button class="btn btn-save hidden" id="modalSaveBtn">Save Edits</button>
+        <label for="directorComment" style="font-weight:600;font-size:0.85rem;color:#555">Director Comment (optional — saved on Review or Edit)</label>
+        <textarea id="directorComment" placeholder="Any note for the record…"></textarea>
+        <div class="action-row">
+          <button class="btn btn-reviewed" id="modalReviewedBtn">Mark as Reviewed</button>
+          <button class="btn btn-edit" id="modalEditBtn">Edit Summary</button>
+          <button class="btn btn-save hidden" id="modalSaveBtn">Save Edits</button>
+          <button class="btn reject hidden" id="modalCancelEditBtn">Cancel Edit</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    console.log('[Director] Portal V5.1 loaded — role check is case-insensitive.');
-
-    // V5.1: API_BASE updated to the current live deployment (matches RE portal).
+    console.log('[Director] Portal V6.0 loaded');
     var API_BASE = 'https://script.google.com/macros/s/AKfycbzxLQS4aF6XwPzQcy46BGbNQpB_SRHSfS8chos4de_90zTwjZbK2EqELBwmbQS5AReZ/exec';
     var currentReportId = null;
+    var currentReportData = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
     var dashboardDataCache = null;
     var chartInstances = {};
 
-    // Event Listeners
     document.getElementById('loginBtn').addEventListener('click', attemptLogin);
     document.getElementById('logoutLink').addEventListener('click', function(e) { e.preventDefault(); logout(); });
     document.getElementById('refreshBtn').addEventListener('click', loadReports);
@@ -529,123 +224,65 @@
     document.getElementById('modalReviewedBtn').addEventListener('click', markReviewed);
     document.getElementById('modalEditBtn').addEventListener('click', enableEditMode);
     document.getElementById('modalSaveBtn').addEventListener('click', saveEdits);
+    document.getElementById('modalCancelEditBtn').addEventListener('click', disableEditMode);
     document.getElementById('genRangeReportBtn').addEventListener('click', generateRangeReport);
-
-    // Tab switching
     document.getElementById('tabReports').addEventListener('click', function() { switchTab('reports'); });
     document.getElementById('tabAnalytics').addEventListener('click', function() { switchTab('analytics'); });
 
-    // Auto-login check
     if (loggedUser) { showDashboard(loggedUser); }
 
-    // ===== TAB SWITCHING =====
     function switchTab(tabName) {
       var tabReports = document.getElementById('tabReports');
       var tabAnalytics = document.getElementById('tabAnalytics');
       var reportsTab = document.getElementById('reportsTab');
       var analyticsTab = document.getElementById('analyticsTab');
-
       if (tabName === 'reports') {
-        tabReports.classList.add('active');
-        tabAnalytics.classList.remove('active');
-        reportsTab.classList.remove('hidden');
-        analyticsTab.classList.add('hidden');
+        tabReports.classList.add('active'); tabAnalytics.classList.remove('active');
+        reportsTab.classList.remove('hidden'); analyticsTab.classList.add('hidden');
       } else {
-        tabAnalytics.classList.add('active');
-        tabReports.classList.remove('active');
-        analyticsTab.classList.remove('hidden');
-        reportsTab.classList.add('hidden');
+        tabAnalytics.classList.add('active'); tabReports.classList.remove('active');
+        analyticsTab.classList.remove('hidden'); reportsTab.classList.add('hidden');
         loadAnalyticsDashboard();
       }
     }
 
-    // ===== LOGIN (V5.1 — case-insensitive role, full diagnostics) =====
     function attemptLogin() {
       var name = document.getElementById('loginName').value.trim();
       var pw = document.getElementById('loginPassword').value.trim();
       var err = document.getElementById('loginError');
       var btn = document.getElementById('loginBtn');
-      err.textContent = '';
-      err.style.color = '#C44536';
+      err.textContent = ''; err.style.color = '#C44536';
       if (!name || !pw) { err.textContent = 'Please enter both Name and Password.'; return; }
-
-      btn.disabled = true;
-      btn.textContent = 'Checking...';
-
+      btn.disabled = true; btn.textContent = 'Checking...';
       var url = API_BASE + '?action=login&name=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pw);
-      console.log('[Director] Login attempt for: ' + name);
-
       fetch(url)
-        .then(function(r) {
-          console.log('[Director] Response status: ' + r.status);
-          if (!r.ok) throw new Error('Server returned ' + r.status);
-          return r.text();
-        })
+        .then(function(r) { if (!r.ok) throw new Error('Server returned ' + r.status); return r.text(); })
         .then(function(text) {
           var d;
           try { d = JSON.parse(text); }
-          catch (e) {
-            throw new Error('Backend did not return JSON. Raw response: ' + text.slice(0, 200));
-          }
-          console.log('[Director] Response: ' + JSON.stringify(d));
-
-          // Normalize the returned role to uppercase letters only
+          catch (e) { throw new Error('Backend did not return JSON. Raw: ' + text.slice(0, 200)); }
           var roleNorm = String(d.role || '').toUpperCase().replace(/[^A-Z]/g, '');
-
-          // --- Success: accept DIRECTOR in any casing ---
           if (d.success && roleNorm === 'DIRECTOR') {
             sessionStorage.setItem('hdcre_director', name);
             showDashboard(name);
             return;
           }
-
-          // --- Logged in but wrong role ---
           if (d.success && d.role) {
-            err.textContent = 'Access denied. Your role is "' + d.role +
-              '" (raw: "' + (d.roleRaw || '?') + '"). This portal is for Directors only.';
+            err.textContent = 'Access denied. Your role is "' + d.role + '" (raw: "' + (d.roleRaw || '?') + '"). This portal is for Directors only.';
             return;
           }
-
-          // --- Logged in but no role assigned ---
-          if (d.success) {
-            err.textContent = 'Login OK but no Role assigned. Ask the admin to set your Role to "Director".';
-            return;
-          }
-
-          // --- Failure: diagnostic message ---
+          if (d.success) { err.textContent = 'Login OK but no Role assigned.'; return; }
           var msg = 'Login failed. ';
           switch (d.reason) {
-            case 'SHEET_NOT_FOUND':
-              msg += 'No staff sheet found. Tried: ' + (d.triedSheets || []).join(', ') +
-                     '. Create a sheet named "Staff_Accounts".';
-              break;
-            case 'HEADERS_MISSING':
-              msg += 'Staff sheet headers are wrong. Found: ' + JSON.stringify(d.headers || []) +
-                     '. Expected: Name | Password | Role.';
-              break;
-            case 'NO_MATCH':
-              msg += 'Name/password did not match. Sheet "' + (d.sheetUsed || '?') + '" has ' +
-                     (d.totalRows || 0) + ' data row(s). Names found: ' +
-                     (d.namesSample || []).join(', ') + '.';
-              break;
-            default:
-              msg += (d.message || 'Invalid name or password.') +
-                     ' Make sure your account exists in Staff_Accounts with Role = Director.';
+            case 'SHEET_NOT_FOUND': msg += 'No staff sheet found.'; break;
+            case 'HEADERS_MISSING': msg += 'Staff sheet headers are wrong.'; break;
+            case 'NO_MATCH': msg += 'Name/password did not match. Names: ' + (d.namesSample || []).join(', '); break;
+            default: msg += (d.message || 'Invalid credentials.');
           }
           err.textContent = msg;
         })
-        .catch(function(e) {
-          console.error('[Director] Login error: ' + e.message);
-          if (e.message.indexOf('Failed to fetch') !== -1) {
-            err.textContent = 'Network error — cannot reach backend. Check that Code.gs is deployed (Web App, "Anyone" access) and API_BASE is the /exec URL.';
-          } else {
-            err.textContent = 'Error: ' + e.message;
-          }
-        })
-        .finally(function() {
-          btn.disabled = false;
-          btn.textContent = 'Login';
-        });
+        .catch(function(e) { err.textContent = e.message.indexOf('Failed to fetch') !== -1 ? 'Network error — cannot reach backend.' : 'Error: ' + e.message; })
+        .finally(function() { btn.disabled = false; btn.textContent = 'Login'; });
     }
 
     function showDashboard(name) {
@@ -653,30 +290,32 @@
       document.getElementById('dashboard').classList.remove('hidden');
       document.getElementById('loggedUser').textContent = name;
       loadReports();
+      loadSitesForFilter();
     }
+    function logout() { sessionStorage.removeItem('hdcre_director'); location.reload(); }
 
-    function logout() {
-      sessionStorage.removeItem('hdcre_director');
-      location.reload();
+    function loadSitesForFilter() {
+      fetch(API_BASE + '?endpoint=sites')
+        .then(function(r) { return r.json(); })
+        .then(function(sites) {
+          var sel = document.getElementById('rangeSite');
+          sel.innerHTML = '<option value="">-- All Sites --</option>';
+          (sites || []).forEach(function(s) {
+            var o = document.createElement('option');
+            o.value = s.name; o.textContent = s.name;
+            sel.appendChild(o);
+          });
+        }).catch(function() {});
     }
 
     // ===== REPORTS TAB =====
     function loadReports() {
       var table = document.getElementById('reportsTable');
       table.innerHTML = '<p style="color:var(--primary)">Loading reports...</p>';
-
       fetch(API_BASE + '?endpoint=reports')
-        .then(function(r) {
-          console.log('[Director] Reports fetch status: ' + r.status);
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          return r.json();
-        })
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function(data) {
-          console.log('[Director] Reports response type: ' + typeof data);
-          console.log('[Director] Reports data:', JSON.stringify(data).substring(0, 500));
-
           var reports = Array.isArray(data) ? data : (data.reports || []);
-
           var html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
           if (reports.length === 0) {
             html += '<tr><td colspan="8">No reports found.</td></tr>';
@@ -688,335 +327,228 @@
                 var d = new Date(displayDate);
                 displayDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
               }
-              html += '<tr><td style="font-size:0.75rem">' + (r.id || r['Report ID'] || '-') + '</td><td>' + (r.site || r.Site || '-') + '</td><td>' + displayDate + '</td><td>' + (r.reName || r['Resident Engineer'] || '-') + '</td>';
+              html += '<tr><td style="font-size:0.75rem">' + (r.id || '-') + '</td><td>' + (r.site || '-') + '</td><td>' + displayDate + '</td><td>' + (r.reName || '-') + '</td>';
               html += '<td>' + (r.weather || '-') + '</td><td>' + (r.efficiency || '-') + '</td>';
-              var st = r.status || r['Approval Status'] || '-';
+              var st = r.status || 'Pending';
               if (st === 'Pending') st = 'pending to Review';
               html += '<td><span class="badge ' + st.replace(/\s+/g, '') + '">' + st + '</span></td>';
-              var rid = r.id || r['Report ID'] || '';
-              html += '<td><button class="btn view" data-id="' + rid + '">View</button></td></tr>';
+              html += '<td><button class="btn view" data-id="' + (r.id || '') + '">View</button></td></tr>';
             }
           }
           html += '</table>';
           table.innerHTML = html;
-
           var viewBtns = document.querySelectorAll('[data-id]');
           for (var j = 0; j < viewBtns.length; j++) {
-            viewBtns[j].addEventListener('click', function() {
-              var id = this.getAttribute('data-id');
-              viewReport(id);
-            });
+            viewBtns[j].addEventListener('click', function() { viewReport(this.getAttribute('data-id')); });
           }
         })
         .catch(function(err) {
-          console.error('[Director] Reports error:', err);
           table.innerHTML = '<p class="error">Failed to load reports: ' + err.message + '</p>';
         });
     }
 
     function viewReport(reportId) {
       currentReportId = reportId;
-      console.log('[Director] Viewing report: ' + reportId);
       fetch(API_BASE + '?endpoint=reportDetail&reportId=' + reportId)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          console.log('[Director] ReportDetail response:', JSON.stringify(data).substring(0, 1000));
           if (!data.success) { alert('Could not load report: ' + (data.message || '')); return; }
           var rp = data.report;
+          currentReportData = rp;
           var h = '<h2 style="color:var(--primary);margin-top:0">' + rp.site + ' - ' + rp.date + '</h2>';
-          h += '<div class="meta-grid"><span class="label">RE:</span><span>' + rp.reName + '</span>';
+          h += '<div class="meta-grid">';
+          h += '<span class="label">Report ID:</span><span>' + rp.id + '</span>';
+          h += '<span class="label">RE:</span><span>' + (rp.reName || '') + '</span>';
           h += '<span class="label">Weather:</span><span>' + (rp.weatherAM || '') + ' / ' + (rp.weatherPM || '') + '</span>';
-          h += '<span class="label">Efficiency:</span><span>' + (rp.efficiency || 'N/A') + '</span></div>';
+          h += '<span class="label">Efficiency:</span><span>' + (rp.efficiency || 'N/A') + '</span>';
+          h += '<span class="label">Status:</span><span class="badge ' + (rp.status || '') + '">' + (rp.status || '') + '</span>';
+          if (rp.directorComments) h += '<span class="label">Director Comment:</span><span>' + rp.directorComments + '</span>';
+          h += '</div>';
           h += '<p><strong>Activity Summary:</strong> ' + (rp.activitySummary || '-') + '</p>';
 
-          if (rp.tasks && rp.tasks.length) {
-            h += '<div class="section"><h3>2. Block-Wise Work Progress</h3><table><tr><th>Block</th><th>Task</th><th>Unit</th><th>Planned</th><th>Executed</th><th>Daily %</th><th>Cumulative</th><th>Overall %</th><th>Remarks</th></tr>';
-            for (var i = 0; i < rp.tasks.length; i++) {
-              var t = rp.tasks[i];
-              var dailyPct = (t['Daily Completion %'] != null && t['Daily Completion %'] !== '') ? parseFloat(t['Daily Completion %']).toFixed(1) + '%' : '';
-              var cumPct = (t['Overall Completion %'] != null && t['Overall Completion %'] !== '') ? parseFloat(t['Overall Completion %']).toFixed(1) + '%' : '';
-              h += '<tr><td>' + (t.Block || '') + '</td><td>' + (t['Task Name'] || '') + '</td><td>' + (t.Unit || '') + '</td>';
-              h += '<td>' + (t['Planned QTY'] || '') + '</td><td>' + (t['Executed QTY'] || '') + '</td>';
-              h += '<td>' + dailyPct + '</td><td>' + (t['Cumulative Executed QTY'] || '') + '</td><td>' + cumPct + '</td><td>' + (t.Remarks || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          } else {
-            h += '<div class="section"><h3>2. Block-Wise Work Progress</h3><p style="color:var(--warn)">No task data was submitted with this report.</p></div>';
-          }
-
-          if (rp.blockStatuses && rp.blockStatuses.length) {
-            h += '<div class="section"><h3>3. Block Status Overview (Auto-calculated)</h3><table><tr><th>Block</th><th>Status</th><th>Target Achievement</th><th>Performance</th></tr>';
-            for (var i = 0; i < rp.blockStatuses.length; i++) {
-              var b = rp.blockStatuses[i];
-              h += '<tr><td>' + (b['Block Name'] || '') + '</td><td>' + (b['Block Status'] || '') + '</td><td>' + (b['Target Achievement'] || '') + '</td><td>' + (b['Performance Status'] || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.workforce && rp.workforce.length) {
-            h += '<div class="section"><h3>Workforce</h3><table><tr><th>Type</th><th>Planned</th><th>Available</th><th>Comments</th></tr>';
-            for (var i = 0; i < rp.workforce.length; i++) {
-              var w = rp.workforce[i];
-              h += '<tr><td>' + (w['Labor Type'] || '') + '</td><td>' + (w.Planned || '') + '</td><td>' + (w.Available || '') + '</td><td>' + (w.Comments || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.equipment && rp.equipment.length) {
-            h += '<div class="section"><h3>Equipment</h3><table><tr><th>Type</th><th>Qty</th><th>Condition</th><th>Comments</th></tr>';
-            for (var i = 0; i < rp.equipment.length; i++) {
-              var e = rp.equipment[i];
-              h += '<tr><td>' + (e['Equipment Type'] || '') + '</td><td>' + (e.Quantity || '') + '</td><td>' + (e['Working Condition'] || '') + '</td><td>' + (e.Comments || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          function showMat(title, items) {
-            if (!items || !items.length) return '';
-            var s = '<div class="section"><h3>' + title + '</h3><table><tr><th>Description</th><th>Unit</th><th>Qty</th><th>Block</th></tr>';
-            for (var i = 0; i < items.length; i++) {
-              var m = items[i];
-              s += '<tr><td>' + (m.Description || '') + '</td><td>' + (m.Unit || '') + '</td><td>' + (m.Quantity || '') + '</td><td>' + (m['Allocated Block'] || '') + '</td></tr>';
-            }
+          function renderSection(title, items, cols) {
+            if (!items || items.length === 0) return '';
+            var s = '<div class="section"><h3>' + title + '</h3><table><tr>';
+            cols.forEach(function(c) { s += '<th>' + c + '</th>'; });
+            s += '</tr>';
+            items.forEach(function(item) {
+              s += '<tr>';
+              cols.forEach(function(c) { s += '<td>' + (item[c] || '') + '</td>'; });
+              s += '</tr>';
+            });
             return s + '</table></div>';
           }
-          h += showMat('Materials Delivered', rp.materialsDelivered);
-          h += showMat('Materials On Site', rp.materialsOnSite);
-
-          if (rp.issues && rp.issues.length) {
-            h += '<div class="section"><h3>Issues and Delays</h3><table><tr><th>Block</th><th>Details</th></tr>';
-            for (var i = 0; i < rp.issues.length; i++) {
-              h += '<tr><td>' + (rp.issues[i].Block || '') + '</td><td>' + (rp.issues[i]['Issue Details'] || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.tests && rp.tests.length) {
-            h += '<div class="section"><h3>Tests Conducted</h3><table><tr><th>Test</th><th>Block</th><th>Result</th></tr>';
-            for (var i = 0; i < rp.tests.length; i++) {
-              h += '<tr><td>' + (rp.tests[i].Test || '') + '</td><td>' + (rp.tests[i].Block || '') + '</td><td>' + (rp.tests[i].Result || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.correspondences && rp.correspondences.length) {
-            h += '<div class="section"><h3>Correspondences</h3><table><tr><th>Date</th><th>From</th><th>To</th><th>Subject</th></tr>';
-            for (var i = 0; i < rp.correspondences.length; i++) {
-              var c = rp.correspondences[i];
-              h += '<tr><td>' + (c.Date || '') + '</td><td>' + (c.From || '') + '</td><td>' + (c.To || '') + '</td><td>' + (c.Subject || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.safetyIssues && rp.safetyIssues.length) {
-            h += '<div class="section"><h3>Safety Issues</h3><table><tr><th>Issue</th><th>Block</th><th>Action Taken</th></tr>';
-            for (var i = 0; i < rp.safetyIssues.length; i++) {
-              h += '<tr><td>' + (rp.safetyIssues[i].Issue || '') + '</td><td>' + (rp.safetyIssues[i].Block || '') + '</td><td>' + (rp.safetyIssues[i]['Action Taken'] || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.stakeholderContribution && rp.stakeholderContribution.length) {
-            h += '<div class="section"><h3>Stakeholder Contribution</h3><table><tr><th>Stakeholder</th><th>Contribution</th></tr>';
-            for (var i = 0; i < rp.stakeholderContribution.length; i++) {
-              h += '<tr><td>' + (rp.stakeholderContribution[i].Stakeholder || '') + '</td><td>' + (rp.stakeholderContribution[i].Contribution || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.performance && rp.performance.length) {
-            h += '<div class="section"><h3>Performance Analysis</h3><p><strong>Efficiency:</strong> ' + (rp.efficiency || 'N/A') + '</p>';
-            h += '<table><tr><th>Block</th><th>Target Achievement</th><th>Status</th></tr>';
-            for (var i = 0; i < rp.performance.length; i++) {
-              h += '<tr><td>' + (rp.performance[i].Block || '') + '</td><td>' + (rp.performance[i]['Daily Target Achievement'] || '') + '</td><td>' + (rp.performance[i].Status || '') + '</td></tr>';
-            }
-            h += '</table>';
-            if (rp.recommendations) {
-              h += '<p><strong>Recommendations:</strong></p><pre style="white-space:pre-wrap;font-size:0.85rem">' + rp.recommendations + '</pre>';
-            }
-            h += '</div>';
-          }
-
-          if (rp.siteOrders && rp.siteOrders.length) {
-            h += '<div class="section"><h3>Site Orders</h3><table><tr><th>Order No.</th><th>Issued To</th><th>Instruction</th><th>Deadline</th></tr>';
-            for (var i = 0; i < rp.siteOrders.length; i++) {
-              var o = rp.siteOrders[i];
-              h += '<tr><td>' + (o['Order No'] || '') + '</td><td>' + (o['Issued To'] || '') + '</td><td>' + (o.Instruction || '') + '</td><td>' + (o.Deadline || '') + '</td></tr>';
-            }
-            h += '</table></div>';
-          }
-
-          if (rp.holdPointRequests) {
-            h += '<div class="section"><h3>Hold-Point Requests</h3><p>' + rp.holdPointRequests + '</p></div>';
-          }
-
+          h += renderSection('Block Status', rp.blockStatuses, ['Block Name', 'Block Status', 'Target Achievement', 'Performance Status']);
+          h += renderSection('Work Progress', rp.tasks, ['Block', 'Task Name', 'Unit', 'Planned QTY', 'Executed QTY', 'Daily Completion %', 'Cumulative Executed QTY', 'Overall Completion %', 'Remarks']);
+          h += renderSection('Workforce', rp.workforce, ['Labor Type', 'Planned', 'Available', 'Comments']);
+          h += renderSection('Equipment', rp.equipment, ['Equipment Type', 'Quantity', 'Working Condition', 'Comments']);
+          h += renderSection('Materials Delivered', rp.materialsDelivered, ['Description', 'Unit', 'Quantity', 'Allocated Block']);
+          h += renderSection('Materials On Site', rp.materialsOnSite, ['Description', 'Unit', 'Quantity', 'Allocated Block']);
+          h += renderSection('Issues', rp.issues, ['Block', 'Issue Details']);
+          h += renderSection('Tests', rp.tests, ['Test', 'Block', 'Result']);
+          h += renderSection('Correspondences', rp.correspondences, ['Date', 'From', 'To', 'Subject']);
+          h += renderSection('Safety Issues', rp.safetyIssues, ['Issue', 'Block', 'Action Taken']);
+          h += renderSection('Stakeholder Contribution', rp.stakeholderContribution, ['Stakeholder', 'Contribution']);
+          h += renderSection('Performance', rp.performance, ['Block', 'Daily Target Achievement', 'Status']);
+          h += renderSection('Site Orders', rp.siteOrders, ['Order No', 'Issued To', 'Instruction', 'Deadline']);
+          if (rp.holdPointRequests) h += '<div class="section"><h3>Hold-Point Requests</h3><p>' + rp.holdPointRequests + '</p></div>';
           if (rp.photos && rp.photos.length) {
             h += '<div class="section"><h3>Photos</h3><div class="photo-grid">';
-            for (var i = 0; i < rp.photos.length; i++) {
-              if (rp.photos[i].url) {
-                h += '<img src="' + rp.photos[i].url + '" alt="' + (rp.photos[i].block || 'photo') + '" title="' + (rp.photos[i].caption || '') + '">';
-              }
-            }
+            rp.photos.forEach(function(p) { if (p.url) h += '<img src="' + p.url + '" title="' + (p.caption || '') + '">'; });
             h += '</div></div>';
           }
 
           document.getElementById('modalContent').innerHTML = h;
           document.getElementById('reportModal').classList.remove('hidden');
-          document.getElementById('rejectReason').value = '';
+          document.getElementById('directorComment').value = rp.directorComments || '';
+          disableEditMode();
         })
         .catch(function() { alert('Network error loading report.'); });
     }
 
     function closeModal() {
       document.getElementById('reportModal').classList.add('hidden');
-      currentReportId = null;
+      currentReportId = null; currentReportData = null;
     }
 
-    function approveReport(id, isReject) {
-      // Kept for backward compat — not called from current UI
-      var reason = isReject ? document.getElementById('rejectReason').value.trim() : '';
-      var email = isReject ? (loggedUser + ' [REJECTED]' + (reason ? ' - ' + reason : '')) : loggedUser;
-      fetch(API_BASE, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'approveReport', reportId: id || currentReportId, directorEmail: email })
-      }).finally(function() {
-        closeModal();
-        loadReports();
-      });
-    }
-
+    // ===== REVIEW =====
     function markReviewed() {
       if (!currentReportId) return;
+      var comment = document.getElementById('directorComment').value.trim();
       fetch(API_BASE, {
         method: 'POST',
-        body: JSON.stringify({ action: 'reviewReport', reportId: currentReportId, directorName: loggedUser, status: 'Reviewed' })
+        body: JSON.stringify({
+          action: 'reviewReport',
+          reportId: currentReportId,
+          directorName: loggedUser,
+          status: 'Reviewed',
+          comment: comment
+        })
       })
       .then(function(r) { return r.json(); })
       .then(function(d) {
-        if (d.success) {
-          alert('Report marked as Reviewed. It will be sent to PM for approval.');
-        } else {
-          alert('Failed: ' + (d.message || 'Unknown error'));
-        }
+        if (d.success) alert('Report marked as Reviewed.' + (comment ? ' Comment saved.' : ''));
+        else alert('Failed: ' + (d.message || 'Unknown error'));
       })
       .catch(function() { alert('Network error.'); })
-      .finally(function() {
-        closeModal();
-        loadReports();
-      });
+      .finally(function() { closeModal(); loadReports(); });
     }
 
+    // ===== EDIT SUMMARY =====
     function enableEditMode() {
-      var modalContent = document.getElementById('modalContent');
-      var tds = modalContent.querySelectorAll('td, .meta-grid .label + *');
-      for (var i = 0; i < tds.length; i++) {
-        tds[i].contentEditable = true;
-        tds[i].style.background = '#FFF9C4';
-        tds[i].style.border = '1px dashed #FF8F00';
-        tds[i].style.borderRadius = '4px';
-        tds[i].style.padding = '2px 4px';
-      }
-      var textareas = modalContent.querySelectorAll('textarea');
-      for (var j = 0; j < textareas.length; j++) {
-        textareas[j].removeAttribute('readonly');
-        textareas[j].style.background = '#FFF9C4';
-        textareas[j].style.border = '1px dashed #FF8F00';
-      }
+      if (!currentReportData) return;
+      document.getElementById('editPanel').classList.remove('hidden');
+      document.getElementById('editActivitySummary').value = currentReportData.activitySummary || '';
+      document.getElementById('editEfficiency').value = currentReportData.efficiency || '';
+      document.getElementById('editRecommendations').value = currentReportData.recommendations || '';
+      document.getElementById('editHoldPoints').value = currentReportData.holdPointRequests || '';
       document.getElementById('modalSaveBtn').classList.remove('hidden');
-      document.getElementById('modalEditBtn').textContent = 'Editing...';
+      document.getElementById('modalCancelEditBtn').classList.remove('hidden');
       document.getElementById('modalEditBtn').disabled = true;
+    }
+
+    function disableEditMode() {
+      document.getElementById('editPanel').classList.add('hidden');
+      document.getElementById('modalSaveBtn').classList.add('hidden');
+      document.getElementById('modalCancelEditBtn').classList.add('hidden');
+      document.getElementById('modalEditBtn').disabled = false;
     }
 
     function saveEdits() {
       if (!currentReportId) return;
-      var modalContent = document.getElementById('modalContent');
-      var edits = {};
-      var sections = modalContent.querySelectorAll('.section');
-      for (var s = 0; s < sections.length; s++) {
-        var sectionTitle = sections[s].querySelector('h3');
-        var sectionName = sectionTitle ? sectionTitle.textContent.trim() : 'Section' + s;
-        var tables = sections[s].querySelectorAll('table');
-        if (tables.length > 0) {
-          for (var t = 0; t < tables.length; t++) {
-            var rows = tables[t].querySelectorAll('tbody tr');
-            for (var r = 0; r < rows.length; r++) {
-              var cells = rows[r].querySelectorAll('td');
-              var rowData = [];
-              for (var c = 0; c < cells.length; c++) {
-                rowData.push(cells[c].textContent.trim());
-              }
-              edits[sectionName + '_row' + r] = rowData.join(' | ');
-            }
-          }
-        }
+      var updates = [];
+      var newAct = document.getElementById('editActivitySummary').value;
+      var newEff = document.getElementById('editEfficiency').value;
+      var newRec = document.getElementById('editRecommendations').value;
+      var newHp = document.getElementById('editHoldPoints').value;
+      var comment = document.getElementById('directorComment').value.trim();
+
+      // Only send fields that changed vs currentReportData
+      if (newAct !== (currentReportData.activitySummary || '')) {
+        updates.push({ sheet: 'DailyLog', column: 'Activity Summary', value: newAct });
       }
-      var metaLabels = modalContent.querySelectorAll('.meta-grid .label');
-      for (var m = 0; m < metaLabels.length; m++) {
-        var nextEl = metaLabels[m].nextElementSibling;
-        if (nextEl) edits[metaLabels[m].textContent.trim()] = nextEl.textContent.trim();
+      if (newEff !== (currentReportData.efficiency || '')) {
+        updates.push({ sheet: 'DailyLog', column: 'Resource Efficiency Rating', value: newEff });
+      }
+      if (newRec !== (currentReportData.recommendations || '')) {
+        updates.push({ sheet: 'DailyLog', column: 'Recommendations', value: newRec });
+      }
+      if (newHp !== (currentReportData.holdPointRequests || '')) {
+        updates.push({ sheet: 'DailyLog', column: 'Hold Point Requests', value: newHp });
+      }
+      if (comment && comment !== (currentReportData.directorComments || '')) {
+        updates.push({ sheet: 'DailyLog', column: 'Director Comments', value: comment });
+      }
+
+      if (updates.length === 0) {
+        alert('No changes to save.');
+        return;
       }
 
       fetch(API_BASE, {
         method: 'POST',
-        body: JSON.stringify({ action: 'directorEditReport', reportId: currentReportId, directorName: loggedUser, edits: edits })
+        body: JSON.stringify({
+          action: 'directorEditReport',
+          reportId: currentReportId,
+          directorName: loggedUser,
+          updates: updates
+        })
       })
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (d.success) {
-          alert('Edits saved to backend successfully.');
-          var tds = modalContent.querySelectorAll('td[contenteditable]');
-          for (var i = 0; i < tds.length; i++) {
-            tds[i].contentEditable = false;
-            tds[i].style.background = '';
-            tds[i].style.border = '';
-          }
-          document.getElementById('modalSaveBtn').classList.add('hidden');
-          document.getElementById('modalEditBtn').textContent = 'Edit';
-          document.getElementById('modalEditBtn').disabled = false;
+          alert('Saved: ' + (d.applied || updates.length) + ' field(s) updated in the sheet.');
+          disableEditMode();
+          loadReports();
         } else {
-          alert('Failed to save edits: ' + (d.message || 'Unknown error'));
+          alert('Failed: ' + (d.message || 'Unknown'));
         }
       })
       .catch(function() { alert('Network error saving edits.'); });
     }
 
+    // ===== PERIOD REPORT =====
     function generateRangeReport() {
       var from = document.getElementById('rangeFrom').value;
       var to = document.getElementById('rangeTo').value;
+      var site = document.getElementById('rangeSite').value;
       var resultDiv = document.getElementById('rangeReportResult');
       if (!from || !to) { resultDiv.innerHTML = '<span style="color:var(--danger)">Please select both From and To dates.</span>'; return; }
       if (from > to) { resultDiv.innerHTML = '<span style="color:var(--danger)">From date must be before To date.</span>'; return; }
 
       resultDiv.innerHTML = 'Generating report...';
-      fetch(API_BASE + '?endpoint=rangeReport&from=' + from + '&to=' + to)
+      var url = API_BASE + '?endpoint=rangeReport&from=' + from + '&to=' + to + (site ? '&site=' + encodeURIComponent(site) : '');
+      fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (!data.success) { resultDiv.innerHTML = '<span style="color:var(--danger)">Error: ' + (data.message || 'Unknown') + '</span>'; return; }
           var reports = data.reports || [];
           var totalReports = reports.length;
           var totalIssues = 0;
-          var avgEfficiency = 0;
-          var effCount = 0;
+          var avgEfficiency = 0, effCount = 0;
           var sites = {};
           for (var i = 0; i < reports.length; i++) {
             var r = reports[i];
             if (r.site) sites[r.site] = (sites[r.site] || 0) + 1;
-            if (r.efficiency) { avgEfficiency += (parseFloat(r.efficiency) || 0); effCount++; }
+            if (r.efficiency) {
+              var effMap = { 'Excellent': 95, 'Good': 75, 'Fair': 50, 'Poor': 25 };
+              if (effMap[r.efficiency] != null) { avgEfficiency += effMap[r.efficiency]; effCount++; }
+            }
             if (r.issues && r.issues.length) totalIssues += r.issues.length;
           }
           if (effCount > 0) avgEfficiency = (avgEfficiency / effCount).toFixed(1);
 
           var html = '<div style="background:#f9f7f4;border-radius:8px;padding:1rem;border:1px solid var(--border);margin-top:0.5rem">';
-          html += '<h4 style="color:var(--primary);margin:0 0 0.5rem">Period Report: ' + from + ' to ' + to + '</h4>';
+          html += '<h4 style="color:var(--primary);margin:0 0 0.5rem">Period Report: ' + from + ' to ' + to + (site ? ' — ' + site : '') + '</h4>';
           html += '<table style="font-size:0.85rem"><tr><th>Metric</th><th>Value</th></tr>';
           html += '<tr><td>Total Reports</td><td>' + totalReports + '</td></tr>';
-          html += '<tr><td>Avg Efficiency</td><td>' + (avgEfficiency || 'N/A') + '</td></tr>';
+          html += '<tr><td>Avg Efficiency</td><td>' + (avgEfficiency || 'N/A') + (avgEfficiency ? '%' : '') + '</td></tr>';
           html += '<tr><td>Total Issues</td><td>' + totalIssues + '</td></tr>';
           html += '<tr><td>Sites Covered</td><td>' + Object.keys(sites).length + '</td></tr>';
           html += '</table>';
           if (Object.keys(sites).length > 0) {
             html += '<h5 style="margin:0.5rem 0 0.2rem;color:var(--primary-dark)">Reports per Site</h5><ul>';
-            for (var s in sites) { html += '<li>' + s + ': ' + sites[s] + ' reports</li>'; }
+            for (var s in sites) html += '<li>' + s + ': ' + sites[s] + ' reports</li>';
             html += '</ul>';
           }
           html += '</div>';
@@ -1025,35 +557,23 @@
         .catch(function(err) { resultDiv.innerHTML = '<span style="color:var(--danger)">Network error: ' + err.message + '</span>'; });
     }
 
-    // ===== ANALYTICS DASHBOARD =====
+    // ===== ANALYTICS =====
     function destroyAllCharts() {
-      var keys = Object.keys(chartInstances);
-      for (var i = 0; i < keys.length; i++) {
-        if (chartInstances[keys[i]]) {
-          chartInstances[keys[i]].destroy();
-          chartInstances[keys[i]] = null;
-        }
-      }
+      Object.keys(chartInstances).forEach(function(k) {
+        if (chartInstances[k]) { chartInstances[k].destroy(); chartInstances[k] = null; }
+      });
       chartInstances = {};
     }
 
     function loadAnalyticsDashboard() {
-      if (dashboardDataCache) {
-        renderDashboard(dashboardDataCache);
-        return;
-      }
+      if (dashboardDataCache) { renderDashboard(dashboardDataCache); return; }
       var container = document.getElementById('analyticsContent');
       container.innerHTML = '<div class="dashboard-loading">Loading dashboard data...</div>';
-
       fetch(API_BASE + '?endpoint=dashboard')
         .then(function(r) { return r.json(); })
-        .then(function(data) {
-          dashboardDataCache = data;
-          renderDashboard(data);
-        })
-        .catch(function(err) {
-          console.error('Dashboard fetch error:', err);
-          container.innerHTML = '<div class="dashboard-loading" style="color:#C44536">Failed to load dashboard data. Please try again later.</div>';
+        .then(function(data) { dashboardDataCache = data; renderDashboard(data); })
+        .catch(function() {
+          container.innerHTML = '<div class="dashboard-loading" style="color:#C44536">Failed to load dashboard data.</div>';
         });
     }
 
@@ -1069,16 +589,14 @@
       var effStr = String(kpis.avgEfficiency || '0%');
       var effNum = parseInt(effStr.replace('%', ''), 10) || 0;
       var effClass = 'kpi-eff-low';
-      if (effNum > 80) { effClass = 'kpi-eff-high'; }
-      else if (effNum >= 50) { effClass = 'kpi-eff-mid'; }
+      if (effNum > 80) effClass = 'kpi-eff-high';
+      else if (effNum >= 50) effClass = 'kpi-eff-mid';
 
       var rateVal = parseInt(kpis.reportingRate, 10) || 0;
       var rateColor = '#00695C';
-      if (rateVal < 30) { rateColor = '#C44536'; }
-      else if (rateVal < 60) { rateColor = '#E65100'; }
+      if (rateVal < 30) rateColor = '#C44536'; else if (rateVal < 60) rateColor = '#E65100';
 
       var html = '';
-
       html += '<div class="kpi-grid">';
       html += '<div class="kpi-card"><div class="kpi-label">Total Reports</div><div class="kpi-value">' + (kpis.totalReports || 0) + '</div></div>';
       html += '<div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">' + (kpis.pending || 0) + '</div></div>';
@@ -1088,213 +606,68 @@
       html += '<div class="kpi-card"><div class="kpi-label">Reporting Rate (30d)</div><div class="kpi-value">' + (kpis.reportingRate || 0) + '%</div>';
       html += '<div class="rate-bar-outer"><div class="rate-bar-inner" style="width:' + Math.min(rateVal, 100) + '%;background:' + rateColor + '"></div></div></div>';
       html += '</div>';
-
       html += '<div class="charts-row row-1">';
       html += '<div class="chart-card"><h3>Submission Trend (Last 30 Days)</h3><div class="chart-container"><canvas id="chartSubmission"></canvas></div></div>';
       html += '<div class="chart-card"><h3>Block Status Distribution</h3><div class="chart-container"><canvas id="chartBlockStatus"></canvas></div></div>';
       html += '</div>';
-
       html += '<div class="charts-row row-2">';
       html += '<div class="chart-card"><h3>Workforce Trend (Last 7 Days)</h3><div class="chart-container"><canvas id="chartWorkforce"></canvas></div></div>';
-      html += '<div class="chart-card"><h3>Weekly Summary</h3>';
-      html += '<div style="overflow-x:auto">';
+      html += '<div class="chart-card"><h3>Weekly Summary</h3><div style="overflow-x:auto">';
       html += '<table class="weekly-table"><tr><th>Week Starting</th><th>Reports</th><th>Sites Covered</th></tr>';
-      if (weeklySummary.length === 0) {
-        html += '<tr><td colspan="3" style="text-align:center;color:#999">No data available</td></tr>';
-      } else {
-        for (var w = 0; w < weeklySummary.length; w++) {
-          var ws = weeklySummary[w];
-          html += '<tr><td>' + (ws.weekStart || '') + '</td><td>' + (ws.reports || 0) + '</td><td>' + (ws.sitesCovered || 0) + '</td></tr>';
-        }
-      }
-      html += '</table></div></div>';
-      html += '</div>';
-
+      if (weeklySummary.length === 0) html += '<tr><td colspan="3" style="text-align:center;color:#999">No data available</td></tr>';
+      else weeklySummary.forEach(function(ws) {
+        html += '<tr><td>' + (ws.weekStart || '') + '</td><td>' + (ws.reports || 0) + '</td><td>' + (ws.sitesCovered || 0) + '</td></tr>';
+      });
+      html += '</table></div></div></div>';
       html += '<div class="issues-section"><h3>Recent Issues</h3>';
-      if (topIssues.length === 0) {
-        html += '<div class="no-issues">No issues reported</div>';
-      } else {
+      if (topIssues.length === 0) html += '<div class="no-issues">No issues reported</div>';
+      else {
         html += '<div class="issues-grid">';
-        for (var i = 0; i < topIssues.length; i++) {
-          var issue = topIssues[i];
-          html += '<div class="issue-card">';
-          html += '<div class="issue-block">' + (issue.block || 'N/A') + '</div>';
-          html += '<div class="issue-details">' + (issue.details || 'No details') + '</div>';
-          html += '</div>';
-        }
+        topIssues.forEach(function(issue) {
+          html += '<div class="issue-card"><div class="issue-block">' + (issue.block || 'N/A') + '</div><div class="issue-details">' + (issue.details || 'No details') + '</div></div>';
+        });
         html += '</div>';
       }
       html += '</div>';
 
       document.getElementById('analyticsContent').innerHTML = html;
-
       renderSubmissionChart(submissionTrend);
       renderBlockStatusChart(blockStatusSummary);
       renderWorkforceChart(workforceTrend);
     }
 
     function renderSubmissionChart(trend) {
-      var labels = [];
-      var values = [];
-      for (var i = 0; i < trend.length; i++) {
-        labels.push(trend[i].date || '');
-        values.push(trend[i].count || 0);
-      }
-      var ctx = document.getElementById('chartSubmission');
-      if (!ctx) return;
+      var labels = [], values = [];
+      trend.forEach(function(t) { labels.push(t.date || ''); values.push(t.count || 0); });
+      var ctx = document.getElementById('chartSubmission'); if (!ctx) return;
       chartInstances.submission = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Reports',
-            data: values,
-            borderColor: '#00695C',
-            backgroundColor: 'rgba(0,105,92,0.1)',
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: '#00695C',
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#3E2723',
-              titleFont: { family: 'system-ui' },
-              bodyFont: { family: 'system-ui' }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { maxRotation: 45, font: { size: 10 } }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1, font: { size: 11 } },
-              grid: { color: 'rgba(0,0,0,0.05)' }
-            }
-          }
-        }
+        data: { labels: labels, datasets: [{ label: 'Reports', data: values, borderColor: '#00695C', backgroundColor: 'rgba(0,105,92,0.1)', fill: true, tension: 0.3, pointBackgroundColor: '#00695C', pointRadius: 3, borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } }, y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
       });
     }
-
     function renderBlockStatusChart(summary) {
-      var labels = [];
-      var values = [];
-      var keys = Object.keys(summary);
+      var labels = [], values = [];
+      Object.keys(summary).forEach(function(k) { labels.push(k); values.push(summary[k]); });
+      var ctx = document.getElementById('chartBlockStatus'); if (!ctx) return;
       var colors = ['#00695C', '#E65100', '#80CBC4', '#C44536', '#FFB74D', '#A5D6A7'];
-      for (var i = 0; i < keys.length; i++) {
-        labels.push(keys[i]);
-        values.push(summary[keys[i]] || 0);
-      }
-      var ctx = document.getElementById('chartBlockStatus');
-      if (!ctx) return;
       chartInstances.blockStatus = new Chart(ctx, {
         type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: values,
-            backgroundColor: colors.slice(0, labels.length),
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                padding: 16,
-                usePointStyle: true,
-                pointStyleWidth: 10,
-                font: { size: 12, family: 'system-ui' }
-              }
-            },
-            tooltip: {
-              backgroundColor: '#3E2723',
-              titleFont: { family: 'system-ui' },
-              bodyFont: { family: 'system-ui' }
-            }
-          },
-          cutout: '60%'
-        }
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 2, borderColor: '#fff' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 12 } } } }, cutout: '60%' }
       });
     }
-
     function renderWorkforceChart(trend) {
-      var labels = [];
-      var planned = [];
-      var available = [];
-      for (var i = 0; i < trend.length; i++) {
-        labels.push(trend[i].date || '');
-        planned.push(trend[i].planned || 0);
-        available.push(trend[i].available || 0);
-      }
-      var ctx = document.getElementById('chartWorkforce');
-      if (!ctx) return;
+      var labels = [], planned = [], available = [];
+      trend.forEach(function(t) { labels.push(t.date || ''); planned.push(t.planned || 0); available.push(t.available || 0); });
+      var ctx = document.getElementById('chartWorkforce'); if (!ctx) return;
       chartInstances.workforce = new Chart(ctx, {
         type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Planned',
-              data: planned,
-              backgroundColor: '#00695C',
-              borderRadius: 4,
-              barPercentage: 0.7,
-              categoryPercentage: 0.6
-            },
-            {
-              label: 'Available',
-              data: available,
-              backgroundColor: '#80CBC4',
-              borderRadius: 4,
-              barPercentage: 0.7,
-              categoryPercentage: 0.6
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                usePointStyle: true,
-                pointStyleWidth: 10,
-                font: { size: 12, family: 'system-ui' }
-              }
-            },
-            tooltip: {
-              backgroundColor: '#3E2723',
-              titleFont: { family: 'system-ui' },
-              bodyFont: { family: 'system-ui' }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10 } }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 5, font: { size: 11 } },
-              grid: { color: 'rgba(0,0,0,0.05)' }
-            }
-          }
-        }
+        data: { labels: labels, datasets: [
+          { label: 'Planned', data: planned, backgroundColor: '#00695C', borderRadius: 4 },
+          { label: 'Available', data: available, backgroundColor: '#80CBC4', borderRadius: 4 }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, font: { size: 12 } } } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { stepSize: 5 }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
       });
     }
   </script>
