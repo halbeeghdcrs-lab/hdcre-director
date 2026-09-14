@@ -1,10 +1,10 @@
-<!-- Version 6.0 -->
+<!-- Version 6.3 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Director Portal - HDCRS V6</title>
+  <title>Director Portal - HDCRS V6.3</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -40,7 +40,6 @@
     .btn-reviewed { background: var(--primary); color: white; }
     .btn-edit { background: #FF8F00; color: white; }
     .btn-save { background: var(--success); color: white; }
-    .Reviewed { background: #E8F5E9; color: var(--success); }
     .btn-date-range { background: #5D4037; color: white; }
     .hidden { display: none !important; }
     .error { color: var(--danger); margin-top: 0.5rem; min-height: 1.2rem; font-size: 0.9rem; }
@@ -48,10 +47,10 @@
     th { background: #f3e7da; color: var(--text); padding: 0.5rem; text-align: left; border-bottom: 2px solid var(--primary); font-weight: 600; }
     td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
     .badge { padding: 0.15rem 0.6rem; border-radius: 10px; font-weight: 600; font-size: 0.8rem; display: inline-block; }
-    .Pending { background: #FFF3E0; color: #E65100; }
-    .Approved { background: #E0F2F1; color: var(--primary); }
-    .Rejected { background: #FFEBEE; color: var(--danger); }
-    .Reviewed { background: #E8F5E9; color: var(--success); }
+    .badge.Pending { background: #FFF3E0; color: #E65100; }
+    .badge.Approved { background: #E0F2F1; color: var(--primary); }
+    .badge.Rejected { background: #FFEBEE; color: var(--danger); }
+    .badge.Reviewed { background: #E8F5E9; color: var(--success); }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; border-radius: 16px; padding: 1.5rem; max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto; }
     .modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #999; }
@@ -63,8 +62,8 @@
     .section table { font-size: 0.82rem; }
     .meta-grid { display: grid; grid-template-columns: 160px 1fr; gap: 0.2rem 10px; font-size: 0.9rem; }
     .meta-grid .label { font-weight: 600; color: #555; }
-    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .photo-grid img { max-width: 130px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .photo-grid img { max-width: 160px; max-height: 120px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; cursor: pointer; }
     .dashboard-loading { text-align: center; padding: 3rem 1rem; color: #888; font-size: 1rem; }
     .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.2rem; }
     .kpi-card { background: var(--card); border-radius: 16px; padding: 1.2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid var(--border); text-align: center; }
@@ -127,7 +126,7 @@
   <div id="dashboard" class="container hidden">
     <div class="dashboard-header">
       <img src="https://raw.githubusercontent.com/halbeeghdcrs-lab/HALBEEG-HDCRS/main/logo.png" alt="Halbeeg Logo">
-      <h1>Director Portal - HDCRS V6</h1>
+      <h1>Director Portal - HDCRS V6.3</h1>
     </div>
     <div class="user-bar">
       <span>Logged in as <strong id="loggedUser"></strong></span>
@@ -209,8 +208,8 @@
   </div>
 
   <script>
-    console.log('[Director] Portal V6.0 loaded');
-    var API_BASE = 'https://script.google.com/macros/s/AKfycbzxLQS4aF6XwPzQcy46BGbNQpB_SRHSfS8chos4de_90zTwjZbK2EqELBwmbQS5AReZ/exec';
+    console.log('[Director] Portal V6.3 loaded');
+    var API_BASE = 'https://script.google.com/macros/s/AKfycbzepwgDPfxDGLgReRkHGIUJoszgM2TVsAffkCdMUyNOUMhLt12BrueFo9ZcHjCkvwB3/exec';
     var currentReportId = null;
     var currentReportData = null;
     var loggedUser = sessionStorage.getItem('hdcre_director');
@@ -308,7 +307,7 @@
         }).catch(function() {});
     }
 
-    // ===== REPORTS TAB =====
+    // ===== REPORTS TAB — V6.3 (separate Review / Approval columns) =====
     function loadReports() {
       var table = document.getElementById('reportsTable');
       table.innerHTML = '<p style="color:var(--primary)">Loading reports...</p>';
@@ -316,9 +315,9 @@
         .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function(data) {
           var reports = Array.isArray(data) ? data : (data.reports || []);
-          var html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Status</th><th>Actions</th></tr>';
+          var html = '<table><tr><th>ID</th><th>Site</th><th>Date</th><th>RE</th><th>Weather</th><th>Efficiency</th><th>Review</th><th>Approval</th><th>Actions</th></tr>';
           if (reports.length === 0) {
-            html += '<tr><td colspan="8">No reports found.</td></tr>';
+            html += '<tr><td colspan="9">No reports found.</td></tr>';
           } else {
             for (var i = 0; i < reports.length; i++) {
               var r = reports[i];
@@ -327,11 +326,12 @@
                 var d = new Date(displayDate);
                 displayDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
               }
+              var reviewStatus = r.reviewStatus || 'Pending';
+              var approvalStatus = r.status || 'Pending';
               html += '<tr><td style="font-size:0.75rem">' + (r.id || '-') + '</td><td>' + (r.site || '-') + '</td><td>' + displayDate + '</td><td>' + (r.reName || '-') + '</td>';
               html += '<td>' + (r.weather || '-') + '</td><td>' + (r.efficiency || '-') + '</td>';
-              var st = r.status || 'Pending';
-              if (st === 'Pending') st = 'pending to Review';
-              html += '<td><span class="badge ' + st.replace(/\s+/g, '') + '">' + st + '</span></td>';
+              html += '<td><span class="badge ' + reviewStatus.replace(/\s+/g,'') + '">' + reviewStatus + '</span></td>';
+              html += '<td><span class="badge ' + approvalStatus.replace(/\s+/g,'') + '">' + approvalStatus + '</span></td>';
               html += '<td><button class="btn view" data-id="' + (r.id || '') + '">View</button></td></tr>';
             }
           }
@@ -347,6 +347,7 @@
         });
     }
 
+    // ===== VIEW REPORT — V6.3 (photos + status + Reviewed lock) =====
     function viewReport(reportId) {
       currentReportId = reportId;
       fetch(API_BASE + '?endpoint=reportDetail&reportId=' + reportId)
@@ -355,13 +356,15 @@
           if (!data.success) { alert('Could not load report: ' + (data.message || '')); return; }
           var rp = data.report;
           currentReportData = rp;
+
           var h = '<h2 style="color:var(--primary);margin-top:0">' + rp.site + ' - ' + rp.date + '</h2>';
           h += '<div class="meta-grid">';
           h += '<span class="label">Report ID:</span><span>' + rp.id + '</span>';
           h += '<span class="label">RE:</span><span>' + (rp.reName || '') + '</span>';
           h += '<span class="label">Weather:</span><span>' + (rp.weatherAM || '') + ' / ' + (rp.weatherPM || '') + '</span>';
           h += '<span class="label">Efficiency:</span><span>' + (rp.efficiency || 'N/A') + '</span>';
-          h += '<span class="label">Status:</span><span class="badge ' + (rp.status || '') + '">' + (rp.status || '') + '</span>';
+          h += '<span class="label">Director Review:</span><span class="badge ' + (rp.reviewStatus || 'Pending') + '">' + (rp.reviewStatus || 'Pending') + '</span>';
+          h += '<span class="label">PM Approval:</span><span class="badge ' + (rp.status || 'Pending') + '">' + (rp.status || 'Pending') + '</span>';
           if (rp.directorComments) h += '<span class="label">Director Comment:</span><span>' + rp.directorComments + '</span>';
           h += '</div>';
           h += '<p><strong>Activity Summary:</strong> ' + (rp.activitySummary || '-') + '</p>';
@@ -392,18 +395,50 @@
           h += renderSection('Performance', rp.performance, ['Block', 'Daily Target Achievement', 'Status']);
           h += renderSection('Site Orders', rp.siteOrders, ['Order No', 'Issued To', 'Instruction', 'Deadline']);
           if (rp.holdPointRequests) h += '<div class="section"><h3>Hold-Point Requests</h3><p>' + rp.holdPointRequests + '</p></div>';
+
+          // V6.3 — photos with thumbnail URL + lightbox open in Drive
           if (rp.photos && rp.photos.length) {
-            h += '<div class="section"><h3>Photos</h3><div class="photo-grid">';
-            rp.photos.forEach(function(p) { if (p.url) h += '<img src="' + p.url + '" title="' + (p.caption || '') + '">'; });
-            h += '</div></div>';
+            h += '<div class="section"><h3>Site Photos (' + rp.photos.length + ')</h3><div class="photo-grid">';
+            rp.photos.forEach(function(p) {
+              if (!p.url) return;
+              var fid = p.fileId || extractFileId(p.url);
+              var src = fid ? ('https://drive.google.com/thumbnail?id=' + fid + '&sz=w1000') : p.url;
+              var fallback = fid ? ('https://drive.google.com/uc?export=view&id=' + fid) : '';
+              var onclick = fid ? ('window.open(\'https://drive.google.com/file/d/' + fid + '/view\',\'_blank\')') : '';
+              h += '<img src="' + src + '" title="' + (p.caption || '') + (p.block ? ' — ' + p.block : '') + '" loading="lazy" ' +
+                   'onerror="this.onerror=null; if(this.src.indexOf(\'thumbnail\')>-1){this.src=\'' + fallback + '\';}" ' +
+                   'onclick="' + onclick + '">';
+            });
+            h += '</div><p style="font-size:0.8rem;color:#888;margin-top:0.4rem">Click any photo to open the full-size original in Google Drive.</p></div>';
           }
 
           document.getElementById('modalContent').innerHTML = h;
           document.getElementById('reportModal').classList.remove('hidden');
           document.getElementById('directorComment').value = rp.directorComments || '';
+
+          // V6.3 — lock Reviewed button if already reviewed or approved
+          var revBtn = document.getElementById('modalReviewedBtn');
+          var alreadyDone = (rp.reviewStatus === 'Reviewed') || (rp.status === 'Approved');
+          if (alreadyDone) {
+            revBtn.disabled = true;
+            revBtn.textContent = (rp.status === 'Approved') ? 'Already Approved' : 'Already Reviewed';
+          } else {
+            revBtn.disabled = false;
+            revBtn.textContent = 'Mark as Reviewed';
+          }
+
           disableEditMode();
         })
         .catch(function() { alert('Network error loading report.'); });
+    }
+
+    // V6.3 — extract a Drive fileId from any URL form
+    function extractFileId(url) {
+      if (!url) return '';
+      var m = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      m = String(url).match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      return m ? m[1] : '';
     }
 
     function closeModal() {
@@ -411,7 +446,6 @@
       currentReportId = null; currentReportData = null;
     }
 
-    // ===== REVIEW =====
     function markReviewed() {
       if (!currentReportId) return;
       var comment = document.getElementById('directorComment').value.trim();
@@ -434,7 +468,6 @@
       .finally(function() { closeModal(); loadReports(); });
     }
 
-    // ===== EDIT SUMMARY =====
     function enableEditMode() {
       if (!currentReportData) return;
       document.getElementById('editPanel').classList.remove('hidden');
@@ -463,7 +496,6 @@
       var newHp = document.getElementById('editHoldPoints').value;
       var comment = document.getElementById('directorComment').value.trim();
 
-      // Only send fields that changed vs currentReportData
       if (newAct !== (currentReportData.activitySummary || '')) {
         updates.push({ sheet: 'DailyLog', column: 'Activity Summary', value: newAct });
       }
@@ -480,10 +512,7 @@
         updates.push({ sheet: 'DailyLog', column: 'Director Comments', value: comment });
       }
 
-      if (updates.length === 0) {
-        alert('No changes to save.');
-        return;
-      }
+      if (updates.length === 0) { alert('No changes to save.'); return; }
 
       fetch(API_BASE, {
         method: 'POST',
@@ -507,7 +536,6 @@
       .catch(function() { alert('Network error saving edits.'); });
     }
 
-    // ===== PERIOD REPORT =====
     function generateRangeReport() {
       var from = document.getElementById('rangeFrom').value;
       var to = document.getElementById('rangeTo').value;
@@ -527,13 +555,11 @@
           var totalIssues = 0;
           var avgEfficiency = 0, effCount = 0;
           var sites = {};
+          var effMap = { 'Excellent': 95, 'Good': 75, 'Fair': 50, 'Poor': 25 };
           for (var i = 0; i < reports.length; i++) {
             var r = reports[i];
             if (r.site) sites[r.site] = (sites[r.site] || 0) + 1;
-            if (r.efficiency) {
-              var effMap = { 'Excellent': 95, 'Good': 75, 'Fair': 50, 'Poor': 25 };
-              if (effMap[r.efficiency] != null) { avgEfficiency += effMap[r.efficiency]; effCount++; }
-            }
+            if (r.efficiency && effMap[r.efficiency] != null) { avgEfficiency += effMap[r.efficiency]; effCount++; }
             if (r.issues && r.issues.length) totalIssues += r.issues.length;
           }
           if (effCount > 0) avgEfficiency = (avgEfficiency / effCount).toFixed(1);
@@ -557,7 +583,6 @@
         .catch(function(err) { resultDiv.innerHTML = '<span style="color:var(--danger)">Network error: ' + err.message + '</span>'; });
     }
 
-    // ===== ANALYTICS =====
     function destroyAllCharts() {
       Object.keys(chartInstances).forEach(function(k) {
         if (chartInstances[k]) { chartInstances[k].destroy(); chartInstances[k] = null; }
